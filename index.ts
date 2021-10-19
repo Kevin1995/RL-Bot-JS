@@ -15,6 +15,12 @@ const client = new DiscordJS.Client({
 // When the bot has been executed
 client.on('ready', () => {
     console.log('The bot is ready')
+
+    new WOKCommands(client, {
+        commandDir: path.join(__dirname, 'commands'),
+        typeScript: true,
+        testServers: "879445475059707965"
+    })
 })
 
 // Register commands that are not in the slash commands

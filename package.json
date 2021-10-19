@@ -1,15 +1,22 @@
 {
   "name": "rl-bot-js",
   "version": "1.0.0",
-  "type": "module",
-  "description": "",
+  "description": "JS Version of Bot",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kevin1995/RL-Bot-JS.git"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Kevin1995/RL-Bot-JS/issues"
+  },
+  "homepage": "https://github.com/Kevin1995/RL-Bot-JS#readme",
   "dependencies": {
     "discord.js": "^13.2.0",
     "dotenv": "^10.0.0",

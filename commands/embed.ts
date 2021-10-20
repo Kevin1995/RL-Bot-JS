@@ -27,6 +27,11 @@ export default {
                     value: 'value two',
                     inline: true,
                 },
+                {
+                    name: 'name four',
+                    value: 'value four',
+                    inline: true,
+                },
             ])
             .addField('name three', 'value three')
 

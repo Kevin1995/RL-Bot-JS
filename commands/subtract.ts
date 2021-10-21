@@ -1,6 +1,5 @@
-import { ICommand } from "wokcommands"
 import DiscordJS from 'discord.js'
-
+import { ICommand } from "wokcommands"
 export default {
     category: 'Testing',
     description: 'Subtracts two numbers together',

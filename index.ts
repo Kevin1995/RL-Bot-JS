@@ -2,6 +2,8 @@ import DiscordJS, { Intents } from 'discord.js'
 import WOKCommands from 'wokcommands'
 import path from 'path'
 import dotenv from 'dotenv'
+import { connectDatabase } from './utils/connectDatabase'
+import { validateEnv } from './utils/validateEnv'
 dotenv.config()
 
 // Intents - Tells our bot what information it needs to function
@@ -14,8 +16,7 @@ const client = new DiscordJS.Client({
 
 // When the bot has been executed
 client.on('ready', () => {
-    console.log('The bot is ready')
-
+    console.log('Discord bot is ready')
     new WOKCommands(client, {
         commandDir: path.join(__dirname, 'commands'),
         typeScript: true,
@@ -36,6 +37,13 @@ client.on('interactionCreate', async (interaction) => {
     if (!interaction.isCommand()) {
         return
     }
-})
+});
 
-client.login(process.env.TOKEN)
+// Connects to Database and Discord
+(async () => {
+    if (!validateEnv()) return;
+    await connectDatabase();
+    await client.login(process.env.TOKEN)
+})();
+
+//client.login(process.env.TOKEN)

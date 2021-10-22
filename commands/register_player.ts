@@ -1,5 +1,6 @@
 import DiscordJS from 'discord.js'
 import { ICommand } from "wokcommands"
+import PlayerSchema from "./../utils/PlayerSchema"
 
 export default {
     category: 'Testing',
@@ -24,6 +25,10 @@ export default {
         await interaction.deferReply({
             ephemeral: true
         })
+
+        const newPlayer = await PlayerSchema.create({
+            discordId: interaction.user.id
+        });
 
         // Waiting 5 seconds for the bot to think. Default wait time is 3 seconds (3000)
         await new Promise(resolve => setTimeout(resolve, 5000))

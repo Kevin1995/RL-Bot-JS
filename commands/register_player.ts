@@ -27,7 +27,9 @@ export default {
         })
 
         const newPlayer = await PlayerSchema.create({
-            discordId: interaction.user.id
+            discordId: interaction.user.id,
+            epicUsername: username,
+            mmr: 600
         });
 
         // Waiting 5 seconds for the bot to think. Default wait time is 3 seconds (3000)

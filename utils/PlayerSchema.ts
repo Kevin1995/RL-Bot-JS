@@ -5,7 +5,12 @@ const PlayerSchema = new Schema({
     discordId: {
         type: SchemaTypes.String,
         required: true
-    }
+    },
+    epicUsername: {
+        type: SchemaTypes.String,
+        required: true
+    },
+    mmr: SchemaTypes.Number,
 })
 
 export default model('Players', PlayerSchema);

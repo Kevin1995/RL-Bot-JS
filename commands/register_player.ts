@@ -26,7 +26,7 @@ export default {
             ephemeral: true
         })
 
-        const newPlayer = await PlayerSchema.create({
+        await PlayerSchema.create({
             discordId: interaction.user.id,
             epicUsername: username,
             mmr: 600
@@ -39,6 +39,5 @@ export default {
         await interaction.editReply({
             content: 'Discord ID is ' + discordID + '\nThe player is ' + username
         })
-
     }
 } as ICommand

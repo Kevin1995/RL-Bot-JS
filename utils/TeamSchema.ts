@@ -13,6 +13,7 @@ const TeamSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    region: String,
     mmr: Number,
     rank: String,
     captainsId: {
@@ -22,7 +23,6 @@ const TeamSchema = new mongoose.Schema({
     viceCaptainsId: String,
     playerThreeId: String,
     playerFourId: String,
-    coach: String,
 })
 
 // Second 'Players' String is required incase you dont want DB name to be plural

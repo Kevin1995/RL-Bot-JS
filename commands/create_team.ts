@@ -1,5 +1,6 @@
 import DiscordJS from 'discord.js'
 import { ICommand } from "wokcommands"
+import TeamSchema from "./../utils/TeamSchema"
 
 export default {
     category: 'Testing',
@@ -103,4 +104,73 @@ export default {
             type: DiscordJS.Constants.ApplicationCommandOptionTypes.STRING,
         }
     ],
+
+    callback: async ({ interaction }) => {
+        const { options } = interaction
+        const discordID = interaction.user.id
+        const playlist = options.getString('playlist')!
+        const region = options.getString('region')!
+        const team_name = options.getString('team_name')!
+        let playerFound: boolean = false;
+        let teamFound: boolean = false;
+
+        await interaction.deferReply({
+            ephemeral: true
+        })
+
+        await TeamSchema.find({})
+            .then((id) => {
+                id.forEach(element => {
+                    if (playerFound === false) {
+                        if (element.captainsId === discordID || element.viceCaptainsId === discordID || element.playerThreeId === discordID || element.playerFourId === discordID) {
+                            if (element.playlist === playlist) {
+                                interaction.editReply({
+                                    content: 'You are already on a ' + playlist + ' team'
+                                })
+                                playerFound = true
+                                teamFound = true
+                            }
+                        }
+                    }
+                    if (teamFound === false) {
+                        if (element.teamName === team_name) {
+                            interaction.editReply({
+                                content: 'Team name ' + team_name + ' already exists!'
+                            })
+                            playerFound = true
+                            teamFound = true
+                        }
+                    }
+                });
+            })
+        if (teamFound === false) {
+            console.log("Teamname dosnt exist")
+        }
+
+        if (playerFound === false) {
+            // We will edit the "bot is thinking" reply with the answer
+            await interaction.editReply({
+                content: 'Entering details into database'
+            })
+            await TeamSchema.create({
+                teamID: 1,
+                teamName: team_name,
+                playlist: playlist,
+                region: region,
+                mmr: 600,
+                rank: "Gold",
+                captainsId: discordID,
+                viceCaptainsId: "",
+                playerThreeId: "",
+                playerFourId: "",
+            });
+
+            await new Promise(resolve => setTimeout(resolve, 5000))
+
+            // We will edit the "bot is thinking" reply with the answer
+            await interaction.editReply({
+                content: 'You have successfully created your team'
+            })
+        }
+    }
 } as ICommand

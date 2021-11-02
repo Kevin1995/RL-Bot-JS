@@ -24,6 +24,18 @@ client.on('ready', async () => {
         typeScript: true,
         testServers: "879445475059707965"
     })
+    let static_roles: string[] = ['Registered', 'US-East', 'Europe', 'US-West', 'Asia SE-Mainland', 'Asia SE-Maritime', 'Middle East', 'Asia East', 'Oceania', 'South Africa', 'South America', 'India']
+    const guild = client.guilds.fetch("879445475059707965");
+    for (var i in static_roles) {
+        const role = (await guild).roles.cache.find(role => role.name == static_roles[i]);
+        if (!role) {
+            (await guild).roles.create({
+                name: static_roles[i],
+                color: '#000000'
+            });
+            console.log('Role ' + static_roles[i] + ' has been created');
+        }
+    }
 })
 
 // Register commands that are not in the slash commands

@@ -10,20 +10,74 @@ export default {
 
     options: [
         {
+            name: 'region',
+            description: 'Choose your region',
+            required: true,
+            type: DiscordJS.Constants.ApplicationCommandOptionTypes.STRING,
+            choices: [
+                {
+                    name: "Europe",
+                    value: "Europe"
+                },
+                {
+                    name: "US-East",
+                    value: "US-East"
+                },
+                {
+                    name: "US-West",
+                    value: "US-West"
+                },
+                {
+                    name: "Asia SE-Mainland",
+                    value: "Asia SE-Mainland"
+                },
+                {
+                    name: "Asia SE-Maritime",
+                    value: "Asia SE-Maritime"
+                },
+                {
+                    name: "Middle East",
+                    value: "Middle East"
+                },
+                {
+                    name: "Asia East",
+                    value: "Asia East"
+                },
+                {
+                    name: "Oceania",
+                    value: "Oceania"
+                },
+                {
+                    name: "South Africa",
+                    value: "South Africa"
+                },
+                {
+                    name: "South America",
+                    value: "South America"
+                },
+                {
+                    name: "India",
+                    value: "India"
+                },
+            ]
+        },
+        {
             name: 'username',
             description: 'Enter your Epic Username',
             required: true,
             type: DiscordJS.Constants.ApplicationCommandOptionTypes.STRING,
-        },
+        }
     ],
 
     callback: async ({ interaction }) => {
         const { options } = interaction
         const discordID = interaction.user.id
         const username = options.getString('username')!
+        const region = options.getString('region')!
         let playerFound: boolean = false;
         const member = interaction.guild!.members.cache.get(discordID)
         const role = interaction.guild!.roles.cache.find(role => role.name == 'Registered')
+        const region_role = interaction.guild!.roles.cache.find(role => role.name == region)
 
         await interaction.deferReply({
             ephemeral: true
@@ -62,6 +116,10 @@ export default {
             // "!" besides member and role is to do with TS 3.7 and will stop an potential undefined error popping up
             // We will catch the error so the bot dosnt stop running
             await member!.roles.add(role!).catch((err) => {
+                console.log(err)
+            })
+
+            await member!.roles.add(region_role!).catch((err) => {
                 console.log(err)
             })
 

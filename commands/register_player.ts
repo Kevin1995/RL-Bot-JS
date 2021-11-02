@@ -22,6 +22,8 @@ export default {
         const discordID = interaction.user.id
         const username = options.getString('username')!
         let playerFound: boolean = false;
+        const member = interaction.guild!.members.cache.get(discordID)
+        const role = interaction.guild!.roles.cache.find(role => role.name == 'Registered')
 
         await interaction.deferReply({
             ephemeral: true
@@ -56,12 +58,19 @@ export default {
                 mmr: 600
             });
 
+            // Adds the "Registered" role to the new player
+            // "!" besides member and role is to do with TS 3.7 and will stop an potential undefined error popping up
+            // We will catch the error so the bot dosnt stop running
+            await member!.roles.add(role!).catch((err) => {
+                console.log(err)
+            })
+
             // Waiting 5 seconds for the bot to think. Default wait time is 3 seconds(3000)
             await new Promise(resolve => setTimeout(resolve, 5000))
 
             // We will edit the "bot is thinking" reply with the answer
             await interaction.editReply({
-                content: 'Discord ID is ' + discordID + '\nThe player is ' + username
+                content: 'You have successfully registered'
             })
         }
     }

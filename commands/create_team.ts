@@ -111,6 +111,8 @@ export default {
         const playlist = options.getString('playlist')!
         const region = options.getString('region')!
         const team_name = options.getString('team_name')!
+        const member = interaction.guild!.members.cache.get(discordID)
+        const role = interaction.guild!.roles.cache.find(role => role.name == team_name)
         let playerFound: boolean = false;
         let teamFound: boolean = false;
 
@@ -135,7 +137,7 @@ export default {
                     if (teamFound === false) {
                         if (element.teamName === team_name) {
                             interaction.editReply({
-                                content: 'Team name ' + team_name + ' already exists!'
+                                content: 'Team name ' + team_name + ' already exists! Please use a different name!'
                             })
                             playerFound = true
                             teamFound = true
@@ -148,9 +150,8 @@ export default {
         }
 
         if (playerFound === false) {
-            // We will edit the "bot is thinking" reply with the answer
             await interaction.editReply({
-                content: 'Entering details into database'
+                content: 'Entering details into database. Please wait.'
             })
             await TeamSchema.create({
                 teamID: 1,
@@ -165,11 +166,23 @@ export default {
                 playerFourId: "",
             });
 
-            await new Promise(resolve => setTimeout(resolve, 5000))
+            if (!role) {
+                interaction.guild!.roles.create({
+                    name: '(' + playlist + ') ' + team_name,
+                    color: '#000000'
+                });
+                await new Promise(resolve => setTimeout(resolve, 5000))
+                const created_role = interaction.guild!.roles.cache.find(role => role.name == '(' + playlist + ') ' + team_name)
+                console.log(created_role)
+                await member!.roles.add(created_role!).catch((err) => {
+                    console.log(err)
+                })
+
+            }
 
             // We will edit the "bot is thinking" reply with the answer
             await interaction.editReply({
-                content: 'You have successfully created your team'
+                content: 'You have successfully created your ' + playlist + ' team ' + team_name
             })
         }
     }

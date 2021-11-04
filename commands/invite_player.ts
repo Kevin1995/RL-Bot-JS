@@ -57,6 +57,7 @@ export default {
         const invitedPlayer = player.replace(/[<@!&>]/g, '')
         let playerOnOtherTeam: boolean = false;
         let teamFound: boolean = false;
+        let channel: TextChannel = client.channels!.cache.get('905496347153662002') as TextChannel;
 
         await interaction.deferReply({
             ephemeral: true
@@ -106,11 +107,13 @@ export default {
             interaction.editReply({
                 content: 'Sending invite to ' + player
             })
-            let channel: TextChannel = client.channels!.cache.get('905496347153662002') as TextChannel;
             channel.send({
                 content: player,
                 components: [row]
-            });
+            })
+                .then(msg => {
+                    setTimeout(() => msg.delete(), 900000)
+                })
         } else {
             interaction.editReply({
                 content: 'You have no ' + playlist + ' team. Please create a team for this format!'

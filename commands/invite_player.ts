@@ -1,4 +1,4 @@
-import DiscordJS from 'discord.js'
+import DiscordJS, { MessageActionRow, MessageButton, TextChannel } from 'discord.js'
 import { ICommand } from "wokcommands"
 import TeamSchema from "./../utils/TeamSchema"
 
@@ -49,7 +49,7 @@ export default {
         }
     ],
 
-    callback: async ({ interaction }) => {
+    callback: async ({ client, interaction }) => {
         const { options } = interaction
         const discordID = interaction.user.id
         const playlist = options.getString('playlist')!
@@ -81,6 +81,20 @@ export default {
                 })
             });
 
+        const row = new MessageActionRow()
+            .addComponents(
+                new MessageButton()
+                    .setCustomId('accept')
+                    .setLabel('Accept Invite')
+                    .setStyle('SUCCESS')
+            )
+            .addComponents(
+                new MessageButton()
+                    .setCustomId('decline')
+                    .setLabel('Decline Invite')
+                    .setStyle('DANGER')
+            )
+
         if (playerOnOtherTeam !== false) {
             interaction.editReply({
                 content: player + ' is already on a ' + playlist + ' team.'
@@ -92,6 +106,11 @@ export default {
             interaction.editReply({
                 content: 'Sending invite to ' + player
             })
+            let channel: TextChannel = client.channels!.cache.get('905496347153662002') as TextChannel;
+            channel.send({
+                content: player,
+                components: [row]
+            });
         } else {
             interaction.editReply({
                 content: 'You have no ' + playlist + ' team. Please create a team for this format!'

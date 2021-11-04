@@ -1,4 +1,4 @@
-import DiscordJS, { Intents } from 'discord.js'
+import DiscordJS, { Intents, TextChannel } from 'discord.js'
 import WOKCommands from 'wokcommands'
 import path from 'path'
 import dotenv from 'dotenv'
@@ -47,10 +47,17 @@ client.on('messageCreate', message => {
 
 // Checking if our command is a slash command.
 // If it is we will have the ping and add commands added.
-client.on('interactionCreate', async (interaction) => {
-    if (!interaction.isCommand()) {
-        return
+client.on('interactionCreate', async interaction => {
+    console.log(interaction)
+    if (interaction.isButton()) {
+        if (interaction.customId === 'accept') {
+            let channel: TextChannel = client.channels!.cache.get('905496347153662002') as TextChannel;
+            channel.messages.fetch(interaction.message.id).then(message => message.delete())
+        }
+        if (interaction.customId === 'decline') {
+            let channel: TextChannel = client.channels!.cache.get('905496347153662002') as TextChannel;
+            channel.messages.fetch(interaction.message.id).then(message => message.delete())
+        }
     }
 });
-
 client.login(process.env.TOKEN)

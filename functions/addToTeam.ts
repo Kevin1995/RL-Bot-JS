@@ -1,12 +1,12 @@
-import { TextChannel } from "discord.js";
+import { Role, TextChannel } from "discord.js";
 import TeamSchema from "./../utils/TeamSchema"
 
-export async function addToTeam(invitedPlayer: string, messageChannel: TextChannel, message: string, teamName: string, teamID: string) {
+export async function addToTeam(invitedPlayer: string, messageChannel: TextChannel, message: string, teamName: string, teamRole: Role) {
     console.log(invitedPlayer)
     console.log(teamName)
-    console.log(teamID)
+    console.log(teamRole)
 
-    await TeamSchema.find({ teamID: teamID })
+    await TeamSchema.find({ teamName: teamName })
         .then((id) => {
             id.forEach(async element => {
                 if (element.viceCaptainsId === "") {

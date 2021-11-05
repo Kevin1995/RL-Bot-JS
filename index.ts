@@ -57,15 +57,25 @@ client.on('interactionCreate', async interaction => {
                 let messageChannel: TextChannel = client.channels!.cache.get('905496347153662002') as TextChannel;
                 let message = interaction.message.id
                 let teamName: string = interaction.message.embeds[0].author!.name!
-                let teamID = interaction.message.embeds[0].fields![1].value
-                addToTeam(invitedPlayer, messageChannel, message, teamName, teamID)
+                let teamPlaylist: string = interaction.message.embeds[0].fields![1].value!
+                let teamRole = interaction.guild!.roles.cache.find(role => role.name == '(' + teamPlaylist + ') ' + teamName)
+                addToTeam(invitedPlayer, messageChannel, message, teamName, teamRole!)
+                let member = interaction.guild!.members.cache.get(reactUser)
+                await member!.roles.add(teamRole!).catch((err) => {
+                    console.log(err)
+                })
             }
             else if (reactUser === "641168583862517791") {
                 let messageChannel: TextChannel = client.channels!.cache.get('905496347153662002') as TextChannel;
                 let message = interaction.message.id
                 let teamName: string = interaction.message.embeds[0].author!.name!
-                let teamID = interaction.message.embeds[0].fields![1].value
-                addToTeam(invitedPlayer, messageChannel, message, teamName, teamID)
+                let teamPlaylist: string = interaction.message.embeds[0].fields![1].value
+                let teamRole = interaction.guild!.roles.cache.find(role => role.name == '(' + teamPlaylist + ') ' + teamName)
+                addToTeam(invitedPlayer, messageChannel, message, teamName, teamRole!)
+                let member = interaction.guild!.members.cache.get(reactUser)
+                await member!.roles.add(teamRole!).catch((err) => {
+                    console.log(err)
+                })
             }
         }
         if (interaction.customId === 'decline_team_invite') {
@@ -73,7 +83,7 @@ client.on('interactionCreate', async interaction => {
             let messageChannel: TextChannel = client.channels!.cache.get('905496347153662002') as TextChannel;
             let message = interaction.message.id
             let teamName: string = interaction.message.embeds[0].author!.name!
-            let teamPlaylist: string = interaction.message.embeds[0].fields![2].value
+            let teamPlaylist: string = interaction.message.embeds[0].fields![1].value
             await messageChannel.messages.fetch(message)
                 .then(message => message.edit({
                     content: `<@${invitedPlayer}> has declined the invite to join the ${teamPlaylist} team ${teamName}`,

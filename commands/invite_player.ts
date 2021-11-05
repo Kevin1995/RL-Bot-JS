@@ -58,7 +58,6 @@ export default {
         let playerOnOtherTeam: boolean = false;
         let teamFound: boolean = false;
         let maxPlayersOnTeam: boolean = false;
-        let teamId: string = ''
         let channel: TextChannel = client.channels!.cache.get('905496347153662002') as TextChannel;
         let invMsg: string = ''
         let invMsgTeamName: string = ''
@@ -75,7 +74,6 @@ export default {
                             teamFound = true
                             invMsg = player + ' you have been invited to join the ' + playlist + ' team ' + element.teamName
                             invMsgTeamName = element.teamName
-                            teamId = element.teamID
                         }
                     }
                     if (playerOnOtherTeam === false) {
@@ -113,7 +111,6 @@ export default {
             interaction.editReply({
                 content: 'Invite has been sent to ' + player
             })
-            console.log(teamId)
 
             const row = new MessageActionRow()
                 .addComponents(
@@ -139,11 +136,6 @@ export default {
                     {
                         name: 'Team Name',
                         value: `${invMsgTeamName}`,
-                        inline: true,
-                    },
-                    {
-                        name: 'Team ID',
-                        value: `${teamId}`,
                         inline: true,
                     },
                     {

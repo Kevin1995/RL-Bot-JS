@@ -154,7 +154,6 @@ export default {
                 content: 'Entering details into database. Please wait.'
             })
             await TeamSchema.create({
-                teamID: 1,
                 teamName: team_name,
                 playlist: playlist,
                 region: region,

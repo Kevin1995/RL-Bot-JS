@@ -2,9 +2,6 @@ import mongoose from "mongoose"
 
 // Maybe create tables here if they dont already exists?
 const TeamSchema = new mongoose.Schema({
-    teamID: {
-        type: Number,
-    },
     teamName: {
         type: String,
         required: true

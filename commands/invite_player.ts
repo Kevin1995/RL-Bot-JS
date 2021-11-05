@@ -58,6 +58,7 @@ export default {
         let playerOnOtherTeam: boolean = false;
         let teamFound: boolean = false;
         let channel: TextChannel = client.channels!.cache.get('905496347153662002') as TextChannel;
+        let invMsg: string = ''
 
         await interaction.deferReply({
             ephemeral: true
@@ -69,6 +70,7 @@ export default {
                     if (teamFound === false) {
                         if (element.captainsId === discordID && element.playlist === playlist) {
                             teamFound = true
+                            invMsg = player + ' you have been invited to join the ' + playlist + ' team ' + element.teamName
                         }
                     }
                     if (playerOnOtherTeam === false) {
@@ -108,7 +110,7 @@ export default {
                 content: 'Sending invite to ' + player
             })
             channel.send({
-                content: player,
+                content: invMsg,
                 components: [row]
             })
                 .then(msg => {

@@ -3,6 +3,7 @@ import WOKCommands from 'wokcommands'
 import path from 'path'
 import dotenv from 'dotenv'
 import mongoose from "mongoose"
+import { addToTeam } from './functions/addToTeam';
 dotenv.config()
 
 // Intents - Tells our bot what information it needs to function
@@ -48,11 +49,12 @@ client.on('messageCreate', message => {
 // Checking if our command is a slash command.
 // If it is we will have the ping and add commands added.
 client.on('interactionCreate', async interaction => {
-    console.log(interaction)
     if (interaction.isButton()) {
         if (interaction.customId === 'accept') {
-            let channel: TextChannel = client.channels!.cache.get('905496347153662002') as TextChannel;
-            channel.messages.fetch(interaction.message.id).then(message => message.delete())
+            let invitedPlayer = interaction.message.content.split(' ')[0].replace(/[<@!&>]/g, '')
+            let messageChannel: TextChannel = client.channels!.cache.get('905496347153662002') as TextChannel;
+            let message = interaction.message.id
+            addToTeam(invitedPlayer, messageChannel, message)
         }
         if (interaction.customId === 'decline') {
             let channel: TextChannel = client.channels!.cache.get('905496347153662002') as TextChannel;

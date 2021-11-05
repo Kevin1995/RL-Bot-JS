@@ -1,4 +1,4 @@
-import DiscordJS, { MessageActionRow, MessageButton, TextChannel } from 'discord.js'
+import DiscordJS, { MessageActionRow, MessageButton, MessageEmbed, TextChannel } from 'discord.js'
 import { ICommand } from "wokcommands"
 import TeamSchema from "./../utils/TeamSchema"
 
@@ -57,8 +57,11 @@ export default {
         const invitedPlayer = player.replace(/[<@!&>]/g, '')
         let playerOnOtherTeam: boolean = false;
         let teamFound: boolean = false;
+        let maxPlayersOnTeam: boolean = false;
+        let teamId: string = ''
         let channel: TextChannel = client.channels!.cache.get('905496347153662002') as TextChannel;
         let invMsg: string = ''
+        let invMsgTeamName: string = ''
 
         await interaction.deferReply({
             ephemeral: true
@@ -71,6 +74,8 @@ export default {
                         if (element.captainsId === discordID && element.playlist === playlist) {
                             teamFound = true
                             invMsg = player + ' you have been invited to join the ' + playlist + ' team ' + element.teamName
+                            invMsgTeamName = element.teamName
+                            teamId = element.teamID
                         }
                     }
                     if (playerOnOtherTeam === false) {
@@ -81,22 +86,21 @@ export default {
                         }
 
                     }
+                    if ((playlist === '2s' || playlist === 'Hoops') && element.playerThreeId !== "") {
+                        playerOnOtherTeam = false
+                        teamFound = false
+                        maxPlayersOnTeam = true
+                        return
+                    }
+
+                    if ((playlist !== '2s' && playlist !== 'Hoops' && playlist !== '1s') && element.playerFourId !== "") {
+                        playerOnOtherTeam = false
+                        teamFound = false
+                        maxPlayersOnTeam = true
+                        return
+                    }
                 })
             });
-
-        const row = new MessageActionRow()
-            .addComponents(
-                new MessageButton()
-                    .setCustomId('accept')
-                    .setLabel('Accept Invite')
-                    .setStyle('SUCCESS')
-            )
-            .addComponents(
-                new MessageButton()
-                    .setCustomId('decline')
-                    .setLabel('Decline Invite')
-                    .setStyle('DANGER')
-            )
 
         if (playerOnOtherTeam !== false) {
             interaction.editReply({
@@ -107,16 +111,63 @@ export default {
 
         if (teamFound !== false) {
             interaction.editReply({
-                content: 'Sending invite to ' + player
+                content: 'Invite has been sent to ' + player
             })
+            console.log(teamId)
+
+            const row = new MessageActionRow()
+                .addComponents(
+                    new MessageButton()
+                        .setCustomId('accept_team_invite')
+                        .setLabel('Accept Invite')
+                        .setStyle('SUCCESS')
+                )
+                .addComponents(
+                    new MessageButton()
+                        .setCustomId('decline_team_invite')
+                        .setLabel('Decline Invite')
+                        .setStyle('DANGER')
+                )
+
+            const embed = new MessageEmbed()
+                .setDescription("Hello World")
+                .setTitle('Title')
+                .setColor('RED')
+                .setAuthor(invMsgTeamName)
+                .setFooter('Footer')
+                .addFields([
+                    {
+                        name: 'Team Name',
+                        value: `${invMsgTeamName}`,
+                        inline: true,
+                    },
+                    {
+                        name: 'Team ID',
+                        value: `${teamId}`,
+                        inline: true,
+                    },
+                    {
+                        name: 'Format',
+                        value: `${playlist}`,
+                        inline: true,
+                    },
+                ])
+                .addField('name three', 'value three')
             channel.send({
                 content: invMsg,
-                components: [row]
+                embeds: [embed],
+                components: [row],
             })
                 .then(msg => {
                     setTimeout(() => msg.delete(), 900000)
                 })
         } else {
+            if (maxPlayersOnTeam !== false) {
+                interaction.editReply({
+                    content: `Cannot invite ${player} to team ${invMsgTeamName} because it is full`
+                })
+                return
+            }
             interaction.editReply({
                 content: 'You have no ' + playlist + ' team. Please create a team for this format!'
             })

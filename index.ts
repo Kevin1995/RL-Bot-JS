@@ -50,15 +50,36 @@ client.on('messageCreate', message => {
 // If it is we will have the ping and add commands added.
 client.on('interactionCreate', async interaction => {
     if (interaction.isButton()) {
-        if (interaction.customId === 'accept') {
+        if (interaction.customId === 'accept_team_invite') {
+            let invitedPlayer = interaction.message.content.split(' ')[0].replace(/[<@!&>]/g, '')
+            let reactUser = interaction.user.id
+            if (reactUser === invitedPlayer) {
+                let messageChannel: TextChannel = client.channels!.cache.get('905496347153662002') as TextChannel;
+                let message = interaction.message.id
+                let teamName: string = interaction.message.embeds[0].author!.name!
+                let teamID = interaction.message.embeds[0].fields![1].value
+                addToTeam(invitedPlayer, messageChannel, message, teamName, teamID)
+            }
+            else if (reactUser === "641168583862517791") {
+                let messageChannel: TextChannel = client.channels!.cache.get('905496347153662002') as TextChannel;
+                let message = interaction.message.id
+                let teamName: string = interaction.message.embeds[0].author!.name!
+                let teamID = interaction.message.embeds[0].fields![1].value
+                addToTeam(invitedPlayer, messageChannel, message, teamName, teamID)
+            }
+        }
+        if (interaction.customId === 'decline_team_invite') {
             let invitedPlayer = interaction.message.content.split(' ')[0].replace(/[<@!&>]/g, '')
             let messageChannel: TextChannel = client.channels!.cache.get('905496347153662002') as TextChannel;
             let message = interaction.message.id
-            addToTeam(invitedPlayer, messageChannel, message)
-        }
-        if (interaction.customId === 'decline') {
-            let channel: TextChannel = client.channels!.cache.get('905496347153662002') as TextChannel;
-            channel.messages.fetch(interaction.message.id).then(message => message.delete())
+            let teamName: string = interaction.message.embeds[0].author!.name!
+            let teamPlaylist: string = interaction.message.embeds[0].fields![2].value
+            await messageChannel.messages.fetch(message)
+                .then(message => message.edit({
+                    content: `<@${invitedPlayer}> has declined the invite to join the ${teamPlaylist} team ${teamName}`,
+                    embeds: [],
+                    components: []
+                }))
         }
     }
 });

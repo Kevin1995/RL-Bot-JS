@@ -105,7 +105,7 @@ export default {
         }
     ],
 
-    callback: async ({ interaction }) => {
+    callback: async ({ client, interaction }) => {
         const { options } = interaction
         const discordID = interaction.user.id
         const playlist = options.getString('playlist')!
@@ -172,11 +172,26 @@ export default {
                 });
                 await new Promise(resolve => setTimeout(resolve, 5000))
                 const created_role = interaction.guild!.roles.cache.find(role => role.name == '(' + playlist + ') ' + team_name)
-                console.log(created_role)
                 await member!.roles.add(created_role!).catch((err) => {
                     console.log(err)
                 })
 
+                interaction.guild!.channels.create(
+                    '(' + playlist + ') ' + team_name,
+                    {
+                        permissionOverwrites: [
+                            {
+                                id: created_role!.id,
+                                allow: ['VIEW_CHANNEL']
+                            },
+                            {
+                                //id: everyoneRole!.id,
+                                id: interaction.guild!.roles.everyone,
+                                deny: ['VIEW_CHANNEL'],
+                            }
+                        ]
+                    }
+                )
             }
 
             // We will edit the "bot is thinking" reply with the answer

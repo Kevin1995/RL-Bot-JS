@@ -112,7 +112,7 @@ export default {
         const region = options.getString('region')!
         const team_name = options.getString('team_name')!
         const member = interaction.guild!.members.cache.get(discordID)
-        const role = interaction.guild!.roles.cache.find(role => role.name == team_name)
+        const role = interaction.guild!.roles.cache.find(role => role.name == '(' + playlist + ') ' + team_name)
         let playerFound: boolean = false;
         let teamFound: boolean = false;
 
@@ -170,12 +170,19 @@ export default {
                     name: '(' + playlist + ') ' + team_name,
                     color: '#000000'
                 });
-                await new Promise(resolve => setTimeout(resolve, 5000))
-                const created_role = interaction.guild!.roles.cache.find(role => role.name == '(' + playlist + ') ' + team_name)
-                await member!.roles.add(created_role!).catch((err) => {
-                    console.log(err)
-                })
+            }
+            else {
+                console.log('ROLE ALREADY EXISTS')
+            }
+            await new Promise(resolve => setTimeout(resolve, 5000))
+            const created_role = interaction.guild!.roles.cache.find(role => role.name == '(' + playlist + ') ' + team_name)
+            await member!.roles.add(created_role!).catch((err) => {
+                console.log(err)
+            })
 
+            const created_channel = interaction.guild!.channels.cache.find(channel => channel.name == playlist + '-' + team_name.toLowerCase())
+
+            if (!created_channel) {
                 interaction.guild!.channels.create(
                     '(' + playlist + ') ' + team_name,
                     {
@@ -193,11 +200,18 @@ export default {
                     }
                 )
             }
+            else {
+                console.log('CHANNEL ALREADY EXISTS')
+            }
 
-            // We will edit the "bot is thinking" reply with the answer
-            await interaction.editReply({
-                content: 'You have successfully created your ' + playlist + ' team ' + team_name
-            })
         }
+        else {
+            console.log('ROLE ALREADY EXISTS')
+        }
+
+        // We will edit the "bot is thinking" reply with the answer
+        await interaction.editReply({
+            content: 'You have successfully created your ' + playlist + ' team ' + team_name
+        })
     }
 } as ICommand

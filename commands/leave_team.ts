@@ -4,21 +4,17 @@ import TeamSchema from "./../utils/TeamSchema"
 
 export default {
     category: 'Testing',
-    description: 'Allow the captain to disband the team.',
+    description: 'Allowing Player to create team',
     slash: 'both',
     testOnly: true,
 
     options: [
         {
             name: 'playlist',
-            description: 'Enter playlist of your team you wish to disband.',
+            description: 'Enter playlist for you want to invite player to',
             required: true,
             type: DiscordJS.Constants.ApplicationCommandOptionTypes.STRING,
             choices: [
-                {
-                    name: "1s",
-                    value: "1s"
-                },
                 {
                     name: "2s",
                     value: "2s"
@@ -52,15 +48,33 @@ export default {
         const discordID = interaction.user.id
         const playlist = options.getString('playlist')!
 
-        await TeamSchema.find({ playlist: playlist, captainsId: discordID })
+        await interaction.deferReply({
+            ephemeral: true
+        })
+
+        await TeamSchema.find({ playlist: playlist })
             .then((id) => {
                 id.forEach(async element => {
                     const role = interaction.guild!.roles.cache.find(role => role.name == '(' + playlist + ') ' + element.teamName)
-                    const created_channel = interaction.guild!.channels.cache.find(channel => channel.name == playlist + '-' + element.teamName.toLowerCase())
-                    await TeamSchema.deleteOne({ playlist: playlist, captainsId: discordID })
-                    role!.delete();
-                    created_channel!.delete()
+                    const member = interaction.guild!.members.cache.get(discordID)
+                    if (element.viceCaptainsId === discordID) {
+                        await TeamSchema.updateOne({ _id: element._id }, { viceCaptainsId: "" })
+                        await member!.roles.remove(role!)
+                    }
+                    else if (element.playerThreeId === discordID) {
+                        await TeamSchema.updateOne({ _id: element._id }, { playerThreeId: "" })
+                        await member!.roles.remove(role!)
+                    }
+                    else if (element.playerFourId === discordID) {
+                        await TeamSchema.updateOne({ _id: element._id }, { playerFourId: "" })
+                        await member!.roles.remove(role!)
+                    }
+
                 })
             })
+
+        await interaction.editReply({
+            content: `Player <@!${discordID}> has left your ${playlist} team `
+        })
     }
 } as ICommand

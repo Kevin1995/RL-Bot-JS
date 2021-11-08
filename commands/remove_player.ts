@@ -4,14 +4,14 @@ import TeamSchema from "./../utils/TeamSchema"
 
 export default {
     category: 'Testing',
-    description: 'Allowing Player to create team',
+    description: 'Allowing captain to remove a player from the team.',
     slash: 'both',
     testOnly: true,
 
     options: [
         {
             name: 'playlist',
-            description: 'Enter playlist for you want to invite player to',
+            description: 'Enter playlist you need to remove player from',
             required: true,
             type: DiscordJS.Constants.ApplicationCommandOptionTypes.STRING,
             choices: [
@@ -43,7 +43,7 @@ export default {
         },
         {
             name: 'player',
-            description: 'Tag the player you wish to invite',
+            description: 'Tag the player you wish to remove.',
             required: true,
             type: DiscordJS.Constants.ApplicationCommandOptionTypes.STRING,
         }

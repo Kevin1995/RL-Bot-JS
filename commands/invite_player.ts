@@ -4,7 +4,7 @@ import TeamSchema from "./../utils/TeamSchema"
 
 export default {
     category: 'Testing',
-    description: 'Registers player onto systems',
+    description: 'Invite a player onto a team',
     slash: 'both',
     testOnly: true,
 

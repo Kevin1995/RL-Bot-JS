@@ -11,7 +11,7 @@ export default {
     options: [
         {
             name: 'playlist',
-            description: 'Enter playlist for you want to invite player to',
+            description: 'Enter playlist you wish to transfer ownership of.',
             required: true,
             type: DiscordJS.Constants.ApplicationCommandOptionTypes.STRING,
             choices: [
@@ -43,7 +43,7 @@ export default {
         },
         {
             name: 'player',
-            description: 'Tag the player you wish to invite',
+            description: 'Tag the player you wish to give captancy to.',
             required: true,
             type: DiscordJS.Constants.ApplicationCommandOptionTypes.STRING,
         }

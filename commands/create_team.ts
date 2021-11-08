@@ -47,7 +47,7 @@ export default {
         },
         {
             name: 'region',
-            description: 'Choose your region',
+            description: 'Choose your region.',
             required: true,
             type: DiscordJS.Constants.ApplicationCommandOptionTypes.STRING,
             choices: [
@@ -99,7 +99,7 @@ export default {
         },
         {
             name: 'team_name',
-            description: 'Enter your team name',
+            description: 'Enter your team name.',
             required: true,
             type: DiscordJS.Constants.ApplicationCommandOptionTypes.STRING,
         }

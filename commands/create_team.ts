@@ -105,7 +105,7 @@ export default {
         }
     ],
 
-    callback: async ({ client, interaction }) => {
+    callback: async ({ interaction }) => {
         const { options } = interaction
         const discordID = interaction.user.id
         const playlist = options.getString('playlist')!

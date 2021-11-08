@@ -50,5 +50,17 @@ export default {
     callback: async ({ interaction }) => {
         const { options } = interaction
         const discordID = interaction.user.id
+        const playlist = options.getString('playlist')!
+
+        await TeamSchema.find({ playlist: playlist, captainsId: discordID })
+            .then((id) => {
+                id.forEach(async element => {
+                    const role = interaction.guild!.roles.cache.find(role => role.name == '(' + playlist + ') ' + element.teamName)
+                    const created_channel = interaction.guild!.channels.cache.find(channel => channel.name == playlist + '-' + element.teamName.toLowerCase())
+                    await TeamSchema.deleteOne({ playlist: playlist, captainsId: discordID })
+                    role!.delete();
+                    created_channel!.delete()
+                })
+            })
     }
 } as ICommand

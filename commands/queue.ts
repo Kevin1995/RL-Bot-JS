@@ -1,6 +1,7 @@
 import DiscordJS from 'discord.js'
 import { ICommand } from "wokcommands"
 import TeamSchema from "./../utils/TeamSchema"
+import { addToQueue } from "./../functions/addToQueue";
 
 export default {
     category: 'Testing',
@@ -67,19 +68,63 @@ export default {
         let playerThree = options.getString('playerthree')!
 
         if (playlist === '1s' && playerTwo == null && playerThree == null) {
-            console.log(`${playlist} game is all sorted`)
-            console.log(discordID)
+            //console.log(`${playlist} game is all sorted`)
+            //console.log(discordID)
+            await TeamSchema.find({ "playlist": playlist, "captainsId": discordID })
+                .then((id) => {
+                    id.forEach(element => {
+                        addToQueue(playlist, discordID, '', '')
+                    })
+                })
         }
         else if ((playlist === '2s' || playlist === 'Hoops') && playerTwo !== null && playerThree == null) {
-            console.log(`${playlist} game is all sorted`)
+            //console.log(`${playlist} game is all sorted`)
             playerTwo = playerTwo.replace(/[<@!&>]/g, '')
-            console.log(discordID, playerTwo)
+            await TeamSchema.find({
+
+                "$and": [
+                    {
+                        "playlist ": playlist
+                    },
+                    {
+                        discordID: { "$in": ["captainsId", "viceCaptainsId"] }
+                    }
+                ]
+            })
+                .then((id) => {
+                    id.forEach(element => {
+                        if (element.captainsId === playerTwo || element.viceCaptainsId === playerTwo || element.playerThreeId === playerTwo || element.playerFourId === playerTwo) {
+                            addToQueue(playlist, discordID, playerTwo, '')
+                        }
+                    })
+                })
         }
         else if ((playlist !== '1s' && playlist !== '2s' && playlist !== 'Hoops') && playerTwo !== null && playerThree !== null) {
-            console.log(`${playlist} game is all sorted`)
+            //console.log(`${playlist} game is all sorted`)
             playerTwo = playerTwo.replace(/[<@!&>]/g, '')
             playerThree = playerThree.replace(/[<@!&>]/g, '')
             console.log(discordID, playerTwo, playerThree)
+            await TeamSchema.find({
+
+                "$and": [
+                    {
+                        "playlist ": playlist
+                    },
+                    {
+                        discordID: { "$in": ["captainsId", "viceCaptainsId"] }
+                    }
+                ]
+            })
+                .then((id) => {
+                    id.forEach(element => {
+                        if (element.captainsId === playerTwo || element.viceCaptainsId === playerTwo || element.playerThreeId === playerTwo || element.playerFourId === playerTwo) {
+                            if (element.captainsId === playerThree || element.viceCaptainsId === playerThree || element.playerThreeId === playerThree || element.playerFourId === playerThree) {
+                                addToQueue(playlist, discordID, playerTwo, playerThree)
+                            }
+
+                        }
+                    })
+                })
         } else {
             console.log(`You have not used the command correctly for a ${playlist} game.`)
             return

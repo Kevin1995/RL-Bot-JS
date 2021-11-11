@@ -43,7 +43,7 @@ client.on('ready', async () => {
 // bot_slash_command is used here to register and store commands on cache
 // Better to run here when a new command would be added.
 client.on('messageCreate', message => {
-
+    console.log('CREATED ' + message)
 });
 
 // Checking if our command is a slash command.

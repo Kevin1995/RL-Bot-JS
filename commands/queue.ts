@@ -1,7 +1,8 @@
-import DiscordJS from 'discord.js'
+import DiscordJS, { TextChannel } from 'discord.js'
 import { ICommand } from "wokcommands"
 import TeamSchema from "./../utils/TeamSchema"
-import { addToQueue } from "./../functions/addToQueue";
+import QueueSchema from "./../utils/QueueSchema"
+
 
 export default {
     category: 'Testing',
@@ -60,20 +61,38 @@ export default {
         }
     ],
 
-    callback: async ({ interaction }) => {
+    callback: async ({ client, interaction }) => {
         const { options } = interaction
         const discordID = interaction.user.id
         const playlist = options.getString('playlist')!
         let playerTwo = options.getString('playertwo')!
         let playerThree = options.getString('playerthree')!
+        let inviteChannel: TextChannel = client.channels!.cache.get('905496347153662002') as TextChannel;
 
         if (playlist === '1s' && playerTwo == null && playerThree == null) {
-            //console.log(`${playlist} game is all sorted`)
-            //console.log(discordID)
             await TeamSchema.find({ "playlist": playlist, "captainsId": discordID })
                 .then((id) => {
                     id.forEach(element => {
-                        addToQueue(playlist, discordID, '', '')
+
+                        inviteChannel.send({
+                            content: 'Test'
+                        })
+                            .then((queueMessage) => {
+                                console.log(queueMessage.id)
+                                QueueSchema.create({
+                                    messageId: queueMessage.id,
+                                    teamName: element.teamName,
+                                    playlist: playlist,
+                                    playerOne: discordID,
+                                    playerTwoId: "",
+                                    playerThreeId: "",
+                                })
+                            })
+
+
+                        // QueueSchema.create({
+
+                        // })
                     })
                 })
         }
@@ -94,7 +113,31 @@ export default {
                 .then((id) => {
                     id.forEach(element => {
                         if (element.captainsId === playerTwo || element.viceCaptainsId === playerTwo || element.playerThreeId === playerTwo || element.playerFourId === playerTwo) {
-                            addToQueue(playlist, discordID, playerTwo, '')
+                            TeamSchema.find({ "playlist": playlist, "captainsId": discordID })
+                                .then((id) => {
+                                    id.forEach(element => {
+
+                                        inviteChannel.send({
+                                            content: 'Test'
+                                        })
+                                            .then((queueMessage) => {
+                                                console.log(queueMessage.id)
+                                                QueueSchema.create({
+                                                    messageId: queueMessage.id,
+                                                    teamName: element.teamName,
+                                                    playlist: playlist,
+                                                    playerOne: discordID,
+                                                    playerTwoId: playerTwo,
+                                                    playerThreeId: "",
+                                                })
+                                            })
+
+
+                                        // QueueSchema.create({
+
+                                        // })
+                                    })
+                                })
                         }
                     })
                 })
@@ -119,13 +162,32 @@ export default {
                     id.forEach(element => {
                         if (element.captainsId === playerTwo || element.viceCaptainsId === playerTwo || element.playerThreeId === playerTwo || element.playerFourId === playerTwo) {
                             if (element.captainsId === playerThree || element.viceCaptainsId === playerThree || element.playerThreeId === playerThree || element.playerFourId === playerThree) {
-                                addToQueue(playlist, discordID, playerTwo, playerThree)
-                            }
+                                TeamSchema.find({ "playlist": playlist, "captainsId": discordID })
+                                    .then((id) => {
+                                        id.forEach(element => {
 
+                                            inviteChannel.send({
+                                                content: 'Test'
+                                            })
+                                                .then((queueMessage) => {
+                                                    console.log(queueMessage.id)
+                                                    QueueSchema.create({
+                                                        messageId: queueMessage.id,
+                                                        teamName: element.teamName,
+                                                        playlist: playlist,
+                                                        playerOne: discordID,
+                                                        playerTwoId: playerTwo,
+                                                        playerThreeId: playerThree,
+                                                    })
+                                                })
+                                        })
+                                    })
+                            }
                         }
                     })
                 })
-        } else {
+        }
+        else {
             console.log(`You have not used the command correctly for a ${playlist} game.`)
             return
         }

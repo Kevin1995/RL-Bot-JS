@@ -1,4 +1,4 @@
-import DiscordJS, { TextChannel } from 'discord.js'
+import DiscordJS, { MessageActionRow, MessageButton, MessageEmbed, TextChannel } from 'discord.js'
 import { ICommand } from "wokcommands"
 import TeamSchema from "./../utils/TeamSchema"
 import QueueSchema from "./../utils/QueueSchema"
@@ -67,15 +67,43 @@ export default {
         const playlist = options.getString('playlist')!
         let playerTwo = options.getString('playertwo')!
         let playerThree = options.getString('playerthree')!
-        let inviteChannel: TextChannel = client.channels!.cache.get('905496347153662002') as TextChannel;
+        let inviteChannel: TextChannel = client.channels!.cache.get('908318890369626133') as TextChannel;
 
         if (playlist === '1s' && playerTwo == null && playerThree == null) {
             await TeamSchema.find({ "playlist": playlist, "captainsId": discordID })
                 .then((id) => {
                     id.forEach(element => {
 
+                        const row = new MessageActionRow()
+                            .addComponents(
+                                new MessageButton()
+                                    .setCustomId('accept_match')
+                                    .setLabel('Accept Match')
+                                    .setStyle('SUCCESS')
+                            )
+
+                        const embed = new MessageEmbed()
+                            .setDescription("Hello World")
+                            .setTitle('Title')
+                            .setColor('RED')
+                            .setAuthor('Queue')
+                            .setFooter('Footer')
+                            .addFields([
+                                {
+                                    name: 'Playlist',
+                                    value: `${playlist}`,
+                                    inline: true,
+                                },
+                                {
+                                    name: 'MMR',
+                                    value: `${element.mmr}`,
+                                    inline: true,
+                                },
+                            ])
+
                         inviteChannel.send({
-                            content: 'Test'
+                            embeds: [embed],
+                            components: [row],
                         })
                             .then((queueMessage) => {
                                 console.log(queueMessage.id)
@@ -87,6 +115,7 @@ export default {
                                     playerTwoId: "",
                                     playerThreeId: "",
                                 })
+                                setTimeout(() => queueMessage.delete(), 90000)
                             })
 
 
@@ -117,8 +146,36 @@ export default {
                                 .then((id) => {
                                     id.forEach(element => {
 
+                                        const row = new MessageActionRow()
+                                            .addComponents(
+                                                new MessageButton()
+                                                    .setCustomId('accept_match')
+                                                    .setLabel('Accept Match')
+                                                    .setStyle('SUCCESS')
+                                            )
+
+                                        const embed = new MessageEmbed()
+                                            .setDescription("Hello World")
+                                            .setTitle('Title')
+                                            .setColor('RED')
+                                            .setAuthor('Queue')
+                                            .setFooter('Footer')
+                                            .addFields([
+                                                {
+                                                    name: 'Playlist',
+                                                    value: `${playlist}`,
+                                                    inline: true,
+                                                },
+                                                {
+                                                    name: 'MMR',
+                                                    value: `${element.mmr}`,
+                                                    inline: true,
+                                                },
+                                            ])
+
                                         inviteChannel.send({
-                                            content: 'Test'
+                                            embeds: [embed],
+                                            components: [row],
                                         })
                                             .then((queueMessage) => {
                                                 console.log(queueMessage.id)
@@ -130,7 +187,9 @@ export default {
                                                     playerTwoId: playerTwo,
                                                     playerThreeId: "",
                                                 })
+                                                setTimeout(() => queueMessage.delete(), 90000)
                                             })
+
 
 
                                         // QueueSchema.create({
@@ -166,8 +225,36 @@ export default {
                                     .then((id) => {
                                         id.forEach(element => {
 
+                                            const row = new MessageActionRow()
+                                                .addComponents(
+                                                    new MessageButton()
+                                                        .setCustomId('accept_match')
+                                                        .setLabel('Accept Match')
+                                                        .setStyle('SUCCESS')
+                                                )
+
+                                            const embed = new MessageEmbed()
+                                                .setDescription("Hello World")
+                                                .setTitle('Title')
+                                                .setColor('RED')
+                                                .setAuthor('Queue')
+                                                .setFooter('Footer')
+                                                .addFields([
+                                                    {
+                                                        name: 'Playlist',
+                                                        value: `${playlist}`,
+                                                        inline: true,
+                                                    },
+                                                    {
+                                                        name: 'MMR',
+                                                        value: `${element.mmr}`,
+                                                        inline: true,
+                                                    },
+                                                ])
+
                                             inviteChannel.send({
-                                                content: 'Test'
+                                                embeds: [embed],
+                                                components: [row],
                                             })
                                                 .then((queueMessage) => {
                                                     console.log(queueMessage.id)
@@ -179,6 +266,7 @@ export default {
                                                         playerTwoId: playerTwo,
                                                         playerThreeId: playerThree,
                                                     })
+                                                    setTimeout(() => queueMessage.delete(), 90000)
                                                 })
                                         })
                                     })

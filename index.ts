@@ -4,6 +4,7 @@ import path from 'path'
 import dotenv from 'dotenv'
 import mongoose from "mongoose"
 import { addToTeam } from './functions/addToTeam';
+import QueueSchema from './utils/QueueSchema'
 dotenv.config()
 
 // Intents - Tells our bot what information it needs to function
@@ -45,6 +46,14 @@ client.on('ready', async () => {
 client.on('messageCreate', message => {
     console.log('CREATED ' + message)
 });
+
+client.on("messageDelete", async msg => {
+    console.log(msg.id)
+    await QueueSchema.find({ messageId: msg.id })
+        .then(async (msgID) => {
+            await QueueSchema.deleteOne({ messageId: msg.id })
+        })
+})
 
 // Checking if our command is a slash command.
 // If it is we will have the ping and add commands added.
@@ -90,6 +99,21 @@ client.on('interactionCreate', async interaction => {
                     embeds: [],
                     components: []
                 }))
+        }
+        if (interaction.customId === 'accept_match') {
+            console.log('Match has been accepted')
+            let opponentID = interaction.message.content.split(' ')[0].replace(/[<@!&>]/g, '')
+            let messageChannel: TextChannel = client.channels!.cache.get('908318890369626133') as TextChannel;
+            let message = interaction.message.id
+            await QueueSchema.find({ messageId: interaction.id })
+                .then((id) => {
+                    id.forEach(async element => {
+                        console.log(element)
+                        await QueueSchema.deleteOne({ messageId: element.messageId })
+                    })
+                })
+            await messageChannel.messages.fetch(message)
+                .then(message => message.delete())
         }
     }
 });

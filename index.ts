@@ -5,6 +5,7 @@ import dotenv from 'dotenv'
 import mongoose from "mongoose"
 import { addToTeam } from './functions/addToTeam';
 import QueueSchema from './utils/QueueSchema'
+import { selectPlayersForGame } from './functions/selectPlayersForGame';
 dotenv.config()
 
 // Intents - Tells our bot what information it needs to function
@@ -112,8 +113,17 @@ client.on('interactionCreate', async interaction => {
                         await QueueSchema.deleteOne({ messageId: element.messageId })
                     })
                 })
+            selectPlayersForGame(messageChannel, message)
+                .then(async (results) => {
+                    await interaction.reply({ ephemeral: true, content: 'Match has been accepted! Choose your teammate(s)', components: [results] })
+                })
             await messageChannel.messages.fetch(message)
                 .then(message => message.delete())
+        }
+    }
+    if (interaction.isSelectMenu()) {
+        if (interaction.customId === 'select_players') {
+            console.log('Selecting Players WOOP WOOP')
         }
     }
 });

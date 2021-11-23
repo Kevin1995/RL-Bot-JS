@@ -49,7 +49,7 @@ client.on('messageCreate', message => {
 });
 
 client.on("messageDelete", async msg => {
-    console.log(msg.id)
+    //console.log(msg.id)
     await QueueSchema.find({ messageId: msg.id })
         .then(async (msgID) => {
             await QueueSchema.deleteOne({ messageId: msg.id })
@@ -103,22 +103,31 @@ client.on('interactionCreate', async interaction => {
         }
         if (interaction.customId === 'accept_match') {
             console.log('Match has been accepted')
-            let opponentID = interaction.message.content.split(' ')[0].replace(/[<@!&>]/g, '')
+            let opponentID = interaction.user.id
             let messageChannel: TextChannel = client.channels!.cache.get('908318890369626133') as TextChannel;
             let message = interaction.message.id
-            await QueueSchema.find({ messageId: interaction.id })
-                .then((id) => {
-                    id.forEach(async element => {
-                        console.log(element)
-                        await QueueSchema.deleteOne({ messageId: element.messageId })
-                    })
-                })
-            selectPlayersForGame(messageChannel, message)
+            selectPlayersForGame(messageChannel, message, opponentID, interaction)
                 .then(async (results) => {
-                    await interaction.reply({ ephemeral: true, content: 'Match has been accepted! Choose your teammate(s)', components: [results] })
+                    if (results == null) {
+                        await interaction.reply({
+                            ephemeral: true,
+                            content: 'Match has been accepted!'
+                        })
+                        await messageChannel.messages.fetch(message)
+                            .then(message => message.delete())
+                    }
+                    else {
+                        await interaction.reply({
+                            ephemeral: true,
+                            content: 'Match has been accepted! Choose your teammate(s) <@641168583862517791>',
+                            components: [
+                                results
+                            ]
+                        })
+                        await messageChannel.messages.fetch(message)
+                            .then(message => message.delete())
+                    }
                 })
-            await messageChannel.messages.fetch(message)
-                .then(message => message.delete())
         }
     }
     if (interaction.isSelectMenu()) {

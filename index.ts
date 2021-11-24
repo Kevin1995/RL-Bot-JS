@@ -106,7 +106,7 @@ client.on('interactionCreate', async interaction => {
             let opponentID = interaction.user.id
             let messageChannel: TextChannel = client.channels!.cache.get('908318890369626133') as TextChannel;
             let message = interaction.message.id
-            selectPlayersForGame(messageChannel, message, opponentID, interaction)
+            selectPlayersForGame(messageChannel, message, opponentID, client)
                 .then(async (results) => {
                     if (results == null) {
                         await interaction.reply({
@@ -119,7 +119,7 @@ client.on('interactionCreate', async interaction => {
                     else {
                         await interaction.reply({
                             ephemeral: true,
-                            content: 'Match has been accepted! Choose your teammate(s) <@641168583862517791>',
+                            content: 'Match has been accepted! Choose your teammate(s)',
                             components: [
                                 results
                             ]
@@ -133,6 +133,12 @@ client.on('interactionCreate', async interaction => {
     if (interaction.isSelectMenu()) {
         if (interaction.customId === 'select_players') {
             console.log('Selecting Players WOOP WOOP')
+            console.log(interaction.user.id, interaction.values)
+            await interaction.deferReply({ ephemeral: true });
+            await interaction.editReply({
+                content: 'Players for this match have been chosen.'
+            })
+
         }
     }
 });

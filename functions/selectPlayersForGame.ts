@@ -1,8 +1,8 @@
-import { ButtonInteraction, MessageActionRow, MessageSelectMenu, TextChannel } from "discord.js"
+import { ButtonInteraction, Client, MessageActionRow, MessageSelectMenu, TextChannel } from "discord.js"
 import QueueSchema from "../utils/QueueSchema"
 import TeamSchema from "../utils/TeamSchema"
 
-export async function selectPlayersForGame(messageChannel: TextChannel, messageID: string, opponentID: string, interaction: ButtonInteraction) {
+export async function selectPlayersForGame(messageChannel: TextChannel, messageID: string, opponentID: string, client: Client<boolean>) {
     console.log('Please select your players')
     const queueMessage = await messageChannel.messages.fetch(messageID)
     console.log(opponentID)
@@ -28,11 +28,13 @@ export async function selectPlayersForGame(messageChannel: TextChannel, messageI
                             ]
                         })
                             .then((id) => {
-                                id.forEach(element => {
+                                id.forEach(async element => {
                                     console.log(element)
                                     if (opponentID === element.captainsId) {
-                                        let playerOptionOne = interaction.guild!.members.cache.get(element.viceCaptainsId)
-                                        //let playerOptionTwo = interaction.guild!.members.cache.get(element.playerThreeId)
+                                        let playerOptionOne = (await client.users.fetch(element.viceCaptainsId)).username
+                                        let playerOptionTwo = (await client.users.fetch(element.playerThreeId)).username
+
+                                        console.log(playerOptionOne, playerOptionTwo)
                                         row = new MessageActionRow()
                                             .addComponents(
                                                 new MessageSelectMenu()
@@ -42,15 +44,41 @@ export async function selectPlayersForGame(messageChannel: TextChannel, messageI
                                                     .setMaxValues(2)
                                                     .addOptions([
                                                         {
-                                                            label: playerOptionOne!.user.username,
+                                                            label: playerOptionOne,
                                                             description: 'Teammate #1',
-                                                            value: 'first_option',
+                                                            value: element.viceCaptainsId,
                                                         },
-                                                        /* {
-                                                            label: playerOptionTwo!.user.username,
+                                                        {
+                                                            label: playerOptionTwo,
                                                             description: 'Teammate #2',
-                                                            value: 'second_option',
-                                                        }, */
+                                                            value: element.playerThreeId,
+                                                        },
+                                                    ])
+                                            );
+                                    }
+                                    else {
+                                        let playerOptionOne = (await client.users.fetch(element.captainsId)).username
+                                        let playerOptionTwo = (await client.users.fetch(element.playerThreeId)).username
+
+                                        console.log(playerOptionOne, playerOptionTwo)
+                                        row = new MessageActionRow()
+                                            .addComponents(
+                                                new MessageSelectMenu()
+                                                    .setCustomId('select_players')
+                                                    .setPlaceholder('Nothing selected')
+                                                    .setMinValues(1)
+                                                    .setMaxValues(2)
+                                                    .addOptions([
+                                                        {
+                                                            label: playerOptionOne,
+                                                            description: 'Teammate #1',
+                                                            value: element.captainsId,
+                                                        },
+                                                        {
+                                                            label: playerOptionTwo,
+                                                            description: 'Teammate #2',
+                                                            value: element.playerThreeId,
+                                                        },
                                                     ])
                                             );
                                     }
@@ -59,32 +87,85 @@ export async function selectPlayersForGame(messageChannel: TextChannel, messageI
                         await QueueSchema.deleteOne({ messageId: element.messageId })
                     }
                     else {
-                        const row = new MessageActionRow()
-                            .addComponents(
-                                new MessageSelectMenu()
-                                    .setCustomId('select_players')
-                                    .setPlaceholder('Nothing selected')
-                                    .setMinValues(1)
-                                    .setMaxValues(2)
-                                    .addOptions([
-                                        {
-                                            label: 'Select me',
-                                            description: 'This is a description',
-                                            value: 'first_option',
-                                        },
-                                        {
-                                            label: 'You can select me too',
-                                            description: 'This is also a description',
-                                            value: 'second_option',
-                                        },
-                                        {
-                                            label: 'You can select me too',
-                                            description: 'This is also a description',
-                                            value: 'third_option',
-                                        },
-                                    ]),
-                            );
-                        await QueueSchema.deleteOne({ messageId: element.messageId })
+                        await TeamSchema.find({
+
+                            "$and": [
+                                {
+                                    "playlist": element.playlist,
+                                    opponentID: { "$in": ["captainsId", "viceCaptainsId"] }
+                                }
+                            ]
+                        })
+                            .then((id) => {
+                                id.forEach(async element => {
+                                    console.log(element)
+                                    if (opponentID === element.captainsId) {
+                                        let playerOptionOne = (await client.users.fetch(element.viceCaptainsId)).username
+                                        let playerOptionTwo = (await client.users.fetch(element.playerThreeId)).username
+                                        let playerOptionThree = (await client.users.fetch(element.playerFourId)).username
+
+                                        console.log(playerOptionOne, playerOptionTwo)
+                                        row = new MessageActionRow()
+                                            .addComponents(
+                                                new MessageSelectMenu()
+                                                    .setCustomId('select_players')
+                                                    .setPlaceholder('Nothing selected')
+                                                    .setMinValues(1)
+                                                    .setMaxValues(2)
+                                                    .addOptions([
+                                                        {
+                                                            label: playerOptionOne,
+                                                            description: 'Teammate #1',
+                                                            value: element.viceCaptainsId,
+                                                        },
+                                                        {
+                                                            label: playerOptionTwo,
+                                                            description: 'Teammate #2',
+                                                            value: element.playerThreeId,
+                                                        },
+                                                        {
+                                                            label: playerOptionThree,
+                                                            description: 'Teammate #3',
+                                                            value: element.playerFourId,
+                                                        },
+                                                    ])
+                                            );
+                                    }
+                                    else if (opponentID === element.viceCaptainsId) {
+                                        let playerOptionOne = (await client.users.fetch(element.captainsId)).username
+                                        let playerOptionTwo = (await client.users.fetch(element.playerThreeId)).username
+                                        let playerOptionThree = (await client.users.fetch(element.playerFourId)).username
+
+                                        console.log(playerOptionOne, playerOptionTwo)
+                                        row = new MessageActionRow()
+                                            .addComponents(
+                                                new MessageSelectMenu()
+                                                    .setCustomId('select_players')
+                                                    .setPlaceholder('Nothing selected')
+                                                    .setMinValues(1)
+                                                    .setMaxValues(2)
+                                                    .addOptions([
+                                                        {
+                                                            label: playerOptionOne,
+                                                            description: 'Teammate #1',
+                                                            value: element.captainsId,
+                                                        },
+                                                        {
+                                                            label: playerOptionTwo,
+                                                            description: 'Teammate #2',
+                                                            value: element.playerThreeId,
+                                                        },
+                                                        {
+                                                            label: playerOptionThree,
+                                                            description: 'Teammate #3',
+                                                            value: element.playerFourId,
+                                                        },
+                                                    ])
+                                            );
+                                    }
+                                    await QueueSchema.deleteOne({ messageId: element.messageId })
+                                })
+                            })
                     }
                 })
             })

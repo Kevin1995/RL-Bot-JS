@@ -2,6 +2,7 @@ import DiscordJS, { MessageActionRow, MessageButton, MessageEmbed, TextChannel }
 import { ICommand } from "wokcommands"
 import TeamSchema from "./../utils/TeamSchema"
 import QueueSchema from "./../utils/QueueSchema"
+import MatchSchema from "./../utils/MatchSchema"
 
 
 export default {
@@ -73,7 +74,6 @@ export default {
             await TeamSchema.find({ "playlist": playlist, "captainsId": discordID })
                 .then((id) => {
                     id.forEach(element => {
-
                         const row = new MessageActionRow()
                             .addComponents(
                                 new MessageButton()
@@ -115,6 +115,19 @@ export default {
                                     playerTwoId: "",
                                     playerThreeId: "",
                                 })
+                                MatchSchema.create({
+                                    messageId: queueMessage.id,
+                                    playlist: playlist,
+                                    home_team: element.teamName,
+                                    home_player_one_id: discordID,
+                                    home_player_two_id: "",
+                                    home_player_three_id: "",
+                                    away_team: "",
+                                    away_player_one_id: "",
+                                    away_player_two_id: "",
+                                    away_player_three_id: "",
+                                    winning_team: ""
+                                })
                                 setTimeout(() => queueMessage.delete(), 90000)
                             })
 
@@ -145,7 +158,6 @@ export default {
                             TeamSchema.find({ "playlist": playlist, "captainsId": discordID })
                                 .then((id) => {
                                     id.forEach(element => {
-
                                         const row = new MessageActionRow()
                                             .addComponents(
                                                 new MessageButton()
@@ -186,6 +198,19 @@ export default {
                                                     playerOne: discordID,
                                                     playerTwoId: playerTwo,
                                                     playerThreeId: "",
+                                                })
+                                                MatchSchema.create({
+                                                    messageId: queueMessage.id,
+                                                    playlist: playlist,
+                                                    home_team: element.teamName,
+                                                    home_player_one_id: discordID,
+                                                    home_player_two_id: playerTwo,
+                                                    home_player_three_id: "",
+                                                    away_team: "",
+                                                    away_player_one_id: "",
+                                                    away_player_two_id: "",
+                                                    away_player_three_id: "",
+                                                    winning_team: ""
                                                 })
                                                 setTimeout(() => queueMessage.delete(), 90000)
                                             })
@@ -265,6 +290,19 @@ export default {
                                                         playerOne: discordID,
                                                         playerTwoId: playerTwo,
                                                         playerThreeId: playerThree,
+                                                    })
+                                                    MatchSchema.create({
+                                                        messageId: queueMessage.id,
+                                                        playlist: playlist,
+                                                        home_team: element.teamName,
+                                                        home_player_one_id: discordID,
+                                                        home_player_two_id: playerTwo,
+                                                        home_player_three_id: playerThree,
+                                                        away_team: "",
+                                                        away_player_one_id: "",
+                                                        away_player_two_id: "",
+                                                        away_player_three_id: "",
+                                                        winning_team: ""
                                                     })
                                                     setTimeout(() => queueMessage.delete(), 90000)
                                                 })

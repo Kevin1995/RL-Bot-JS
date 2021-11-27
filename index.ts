@@ -6,6 +6,7 @@ import mongoose from "mongoose"
 import { addToTeam } from './functions/addToTeam';
 import QueueSchema from './utils/QueueSchema'
 import { selectPlayersForGame } from './functions/selectPlayersForGame';
+import MatchSchema from './utils/MatchSchema'
 dotenv.config()
 
 // Intents - Tells our bot what information it needs to function
@@ -108,6 +109,7 @@ client.on('interactionCreate', async interaction => {
             let message = interaction.message.id
             selectPlayersForGame(messageChannel, message, opponentID, client)
                 .then(async (results) => {
+                    console.log(results[0])
                     if (results == null) {
                         await interaction.reply({
                             ephemeral: true,
@@ -119,9 +121,11 @@ client.on('interactionCreate', async interaction => {
                     else {
                         await interaction.reply({
                             ephemeral: true,
-                            content: 'Match has been accepted! Choose your teammate(s)',
+                            embeds: [
+                                results[1]!
+                            ],
                             components: [
-                                results
+                                results[0]!
                             ]
                         })
                         await messageChannel.messages.fetch(message)
@@ -132,8 +136,20 @@ client.on('interactionCreate', async interaction => {
     }
     if (interaction.isSelectMenu()) {
         if (interaction.customId === 'select_players') {
+            let msgID = ''
             console.log('Selecting Players WOOP WOOP')
-            console.log(interaction.user.id, interaction.values)
+            console.log(interaction.user.id, interaction.values, interaction.message.embeds)
+            interaction.message.embeds.some((embed) => {
+                msgID = embed.title!.replace(/[^0-9]/g, '');
+            })
+            console.log(msgID)
+            await MatchSchema.find({ messageId: msgID })
+                .then(async (element) => {
+                    console.log(element)
+                    await MatchSchema.updateOne({ messageId: msgID }, { away_player_one_id: interaction.user.id, away_player_two_id: interaction.values[0]!, away_player_three_id: interaction.values[1]! })
+                })
+
+
             await interaction.deferReply({ ephemeral: true });
             await interaction.editReply({
                 content: 'Players for this match have been chosen.'

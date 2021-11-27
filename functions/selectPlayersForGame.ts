@@ -1,4 +1,5 @@
-import { ButtonInteraction, Client, MessageActionRow, MessageSelectMenu, TextChannel } from "discord.js"
+import { ButtonInteraction, Client, MessageActionRow, MessageEmbed, MessageSelectMenu, TextChannel } from "discord.js"
+import MatchSchema from "../utils/MatchSchema"
 import QueueSchema from "../utils/QueueSchema"
 import TeamSchema from "../utils/TeamSchema"
 
@@ -7,7 +8,9 @@ export async function selectPlayersForGame(messageChannel: TextChannel, messageI
     const queueMessage = await messageChannel.messages.fetch(messageID)
     console.log(opponentID)
     let row = null;
-    async function updateRow() {
+    let embed = null;
+    let teamName = null;
+    async function createDropdownForOpponentTeam() {
         await QueueSchema.find({ messageId: queueMessage.id })
             .then((id) => {
                 id.forEach(async element => {
@@ -28,13 +31,15 @@ export async function selectPlayersForGame(messageChannel: TextChannel, messageI
                             ]
                         })
                             .then((id) => {
-                                id.forEach(async element => {
-                                    console.log(element)
-                                    if (opponentID === element.captainsId) {
-                                        let playerOptionOne = (await client.users.fetch(element.viceCaptainsId)).username
-                                        let playerOptionTwo = (await client.users.fetch(element.playerThreeId)).username
+                                id.forEach(async player => {
+                                    console.log(player)
+                                    if (opponentID === player.captainsId) {
+                                        let playerOptionOne = (await client.users.fetch(player.viceCaptainsId)).username
+                                        let playerOptionTwo = (await client.users.fetch(player.playerThreeId)).username
 
                                         console.log(playerOptionOne, playerOptionTwo)
+                                        embed = new MessageEmbed()
+                                            .setTitle(`Match ${element.messageId} has been accepted! Choose your teammate(s)`)
                                         row = new MessageActionRow()
                                             .addComponents(
                                                 new MessageSelectMenu()
@@ -46,21 +51,27 @@ export async function selectPlayersForGame(messageChannel: TextChannel, messageI
                                                         {
                                                             label: playerOptionOne,
                                                             description: 'Teammate #1',
-                                                            value: element.viceCaptainsId,
+                                                            value: player.viceCaptainsId,
                                                         },
                                                         {
                                                             label: playerOptionTwo,
                                                             description: 'Teammate #2',
-                                                            value: element.playerThreeId,
+                                                            value: player.playerThreeId,
                                                         },
                                                     ])
                                             );
+                                        await MatchSchema.find({ messageId: element.messageId })
+                                            .then(async (result) => {
+                                                await MatchSchema.updateOne({ messageId: element.messageId }, { away_team: player.teamName })
+                                            })
                                     }
                                     else {
-                                        let playerOptionOne = (await client.users.fetch(element.captainsId)).username
-                                        let playerOptionTwo = (await client.users.fetch(element.playerThreeId)).username
+                                        let playerOptionOne = (await client.users.fetch(player.captainsId)).username
+                                        let playerOptionTwo = (await client.users.fetch(player.playerThreeId)).username
 
                                         console.log(playerOptionOne, playerOptionTwo)
+                                        embed = new MessageEmbed()
+                                            .setTitle(`Match ${element.messageId} has been accepted! Choose your teammate(s)`)
                                         row = new MessageActionRow()
                                             .addComponents(
                                                 new MessageSelectMenu()
@@ -72,23 +83,28 @@ export async function selectPlayersForGame(messageChannel: TextChannel, messageI
                                                         {
                                                             label: playerOptionOne,
                                                             description: 'Teammate #1',
-                                                            value: element.captainsId,
+                                                            value: player.captainsId,
                                                         },
                                                         {
                                                             label: playerOptionTwo,
                                                             description: 'Teammate #2',
-                                                            value: element.playerThreeId,
+                                                            value: player.playerThreeId,
                                                         },
                                                     ])
                                             );
+                                        await MatchSchema.find({ messageId: element.messageId })
+                                            .then(async (result) => {
+                                                await MatchSchema.updateOne({ messageId: element.messageId }, { away_team: player.teamName })
+                                            })
                                     }
                                 })
                             })
                         await QueueSchema.deleteOne({ messageId: element.messageId })
                     }
                     else {
+                        console.log('OPPONENTS ARE ')
+                        console.log(element.playerOne, element.playerTwoId, element.playerThreeId)
                         await TeamSchema.find({
-
                             "$and": [
                                 {
                                     "playlist": element.playlist,
@@ -97,14 +113,16 @@ export async function selectPlayersForGame(messageChannel: TextChannel, messageI
                             ]
                         })
                             .then((id) => {
-                                id.forEach(async element => {
-                                    console.log(element)
-                                    if (opponentID === element.captainsId) {
-                                        let playerOptionOne = (await client.users.fetch(element.viceCaptainsId)).username
-                                        let playerOptionTwo = (await client.users.fetch(element.playerThreeId)).username
-                                        let playerOptionThree = (await client.users.fetch(element.playerFourId)).username
+                                id.forEach(async player => {
+                                    console.log(player)
+                                    if (opponentID === player.captainsId) {
+                                        let playerOptionOne = (await client.users.fetch(player.viceCaptainsId)).username
+                                        let playerOptionTwo = (await client.users.fetch(player.playerThreeId)).username
+                                        let playerOptionThree = (await client.users.fetch(player.playerFourId)).username
 
                                         console.log(playerOptionOne, playerOptionTwo)
+                                        embed = new MessageEmbed()
+                                            .setTitle(`Match ${element.messageId} has been accepted! Choose your teammate(s)`)
                                         row = new MessageActionRow()
                                             .addComponents(
                                                 new MessageSelectMenu()
@@ -116,27 +134,33 @@ export async function selectPlayersForGame(messageChannel: TextChannel, messageI
                                                         {
                                                             label: playerOptionOne,
                                                             description: 'Teammate #1',
-                                                            value: element.viceCaptainsId,
+                                                            value: player.viceCaptainsId,
                                                         },
                                                         {
                                                             label: playerOptionTwo,
                                                             description: 'Teammate #2',
-                                                            value: element.playerThreeId,
+                                                            value: player.playerThreeId,
                                                         },
                                                         {
                                                             label: playerOptionThree,
                                                             description: 'Teammate #3',
-                                                            value: element.playerFourId,
+                                                            value: player.playerFourId,
                                                         },
                                                     ])
                                             );
+                                        await MatchSchema.find({ messageId: element.messageId })
+                                            .then(async (result) => {
+                                                await MatchSchema.updateOne({ messageId: element.messageId }, { away_team: player.teamName })
+                                            })
                                     }
-                                    else if (opponentID === element.viceCaptainsId) {
-                                        let playerOptionOne = (await client.users.fetch(element.captainsId)).username
-                                        let playerOptionTwo = (await client.users.fetch(element.playerThreeId)).username
-                                        let playerOptionThree = (await client.users.fetch(element.playerFourId)).username
+                                    else if (opponentID === player.viceCaptainsId) {
+                                        let playerOptionOne = (await client.users.fetch(player.captainsId)).username
+                                        let playerOptionTwo = (await client.users.fetch(player.playerThreeId)).username
+                                        let playerOptionThree = (await client.users.fetch(player.playerFourId)).username
 
                                         console.log(playerOptionOne, playerOptionTwo)
+                                        embed = new MessageEmbed()
+                                            .setTitle(`Match ${element.messageId} has been accepted! Choose your teammate(s)`)
                                         row = new MessageActionRow()
                                             .addComponents(
                                                 new MessageSelectMenu()
@@ -148,20 +172,24 @@ export async function selectPlayersForGame(messageChannel: TextChannel, messageI
                                                         {
                                                             label: playerOptionOne,
                                                             description: 'Teammate #1',
-                                                            value: element.captainsId,
+                                                            value: player.captainsId,
                                                         },
                                                         {
                                                             label: playerOptionTwo,
                                                             description: 'Teammate #2',
-                                                            value: element.playerThreeId,
+                                                            value: player.playerThreeId,
                                                         },
                                                         {
                                                             label: playerOptionThree,
                                                             description: 'Teammate #3',
-                                                            value: element.playerFourId,
+                                                            value: player.playerFourId,
                                                         },
                                                     ])
                                             );
+                                        await MatchSchema.find({ messageId: element.messageId })
+                                            .then(async (result) => {
+                                                await MatchSchema.updateOne({ messageId: element.messageId }, { away_team: player.teamName })
+                                            })
                                     }
                                     await QueueSchema.deleteOne({ messageId: element.messageId })
                                 })
@@ -170,8 +198,8 @@ export async function selectPlayersForGame(messageChannel: TextChannel, messageI
                 })
             })
     }
-    updateRow()
+    createDropdownForOpponentTeam()
     await new Promise(resolve => setTimeout(resolve, 1750))
     console.log(row)
-    return row
+    return [row, embed, teamName]
 }

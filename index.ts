@@ -1,4 +1,4 @@
-import DiscordJS, { Intents, TextChannel } from 'discord.js'
+import DiscordJS, { Intents, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu, TextChannel } from 'discord.js'
 import WOKCommands from 'wokcommands'
 import path from 'path'
 import dotenv from 'dotenv'
@@ -7,6 +7,7 @@ import { addToTeam } from './functions/addToTeam';
 import QueueSchema from './utils/QueueSchema'
 import { selectPlayersForGame } from './functions/selectPlayersForGame';
 import MatchSchema from './utils/MatchSchema'
+import TeamSchema from './utils/TeamSchema'
 dotenv.config()
 
 // Intents - Tells our bot what information it needs to function
@@ -40,6 +41,49 @@ client.on('ready', async () => {
             console.log('Role ' + static_roles[i] + ' has been created');
         }
     }
+    /* let queue = new MessageActionRow()
+        .addComponents(
+            new MessageSelectMenu()
+                .setCustomId('queue_playlist')
+                .setPlaceholder('Nothing selected')
+                .setMinValues(1)
+                .setMaxValues(1)
+                .addOptions([
+                    {
+                        label: '1s',
+                        value: '1s',
+                    },
+                    {
+                        label: '2s',
+                        value: '2s',
+                    },
+                    {
+                        label: '3s',
+                        value: '3s',
+                    },
+                    {
+                        label: 'Rumble',
+                        value: 'Rumble',
+                    },
+                    {
+                        label: 'Hoops',
+                        value: 'Hoops',
+                    },
+                    {
+                        label: 'Dropshot',
+                        value: 'Dropshot',
+                    },
+                    {
+                        label: 'Snowday',
+                        value: 'Snowday',
+                    },
+                ])
+        );
+    let messageChannel: TextChannel = client.channels!.cache.get('908318890369626133') as TextChannel;
+    await messageChannel.send({
+        content: 'Queue here',
+        components: [queue]
+    }) */
 })
 
 // Register commands that are not in the slash commands
@@ -105,7 +149,7 @@ client.on('interactionCreate', async interaction => {
         if (interaction.customId === 'accept_match') {
             console.log('Match has been accepted')
             let opponentID = interaction.user.id
-            let messageChannel: TextChannel = client.channels!.cache.get('908318890369626133') as TextChannel;
+            let messageChannel: TextChannel = client.channels!.cache.get('914264483227131945') as TextChannel;
             let message = interaction.message.id
             selectPlayersForGame(messageChannel, message, opponentID, client)
                 .then(async (results) => {
@@ -155,6 +199,325 @@ client.on('interactionCreate', async interaction => {
                 content: 'Players for this match have been chosen.'
             })
 
+        }
+
+        if (interaction.customId === 'queue_playlist') {
+            const discordID = interaction.user.id
+            const playlist = interaction.values[0]
+            const queueChannel: TextChannel = client.channels!.cache.get('914264483227131945') as TextChannel;
+            let row = null
+            let embed = null
+            await interaction.deferReply({ ephemeral: true });
+            async function createDropdownForQueueing() {
+                await TeamSchema.find({
+                    "$and": [
+                        {
+                            "playlist": playlist,
+                            discordID: { "$in": ["captainsId", "viceCaptainsId"] }
+                        }
+                    ]
+                })
+                    .then((id) => {
+                        id.forEach(async element => {
+                            console.log(element)
+                            if (element.playlist === '1s') {
+                                console.log('1s game')
+                                await TeamSchema.find({ playlist: element.playlist, captainsId: discordID })
+                                    .then((id) => {
+                                        id.forEach(async element => {
+                                            const accept_button = new MessageActionRow()
+                                                .addComponents(
+                                                    new MessageButton()
+                                                        .setCustomId('accept_match')
+                                                        .setLabel('Accept Match')
+                                                        .setStyle('SUCCESS')
+                                                )
+
+                                            const accept_embed = new MessageEmbed()
+                                                .setDescription("Hello World")
+                                                .setTitle('Title')
+                                                .setColor('RED')
+                                                .setAuthor('Queue')
+                                                .setFooter('Footer')
+                                                .addFields([
+                                                    {
+                                                        name: 'Playlist',
+                                                        value: `${element.playlist}`,
+                                                        inline: true,
+                                                    },
+                                                    {
+                                                        name: 'MMR',
+                                                        value: `${element.mmr}`,
+                                                        inline: true,
+                                                    },
+                                                ])
+                                            let msg = await queueChannel.send({
+                                                embeds: [accept_embed],
+                                                components: [accept_button],
+                                            })
+                                            await QueueSchema.create({
+                                                messageId: msg.id,
+                                                teamName: element.teamName,
+                                                playlist: element.playlist,
+                                                playerOne: discordID,
+                                                playerTwoId: "",
+                                                playerThreeId: "",
+                                            })
+                                        })
+                                    })
+                            }
+                            else if (element.playlist === '2s' || element.playlist === 'Hoops') {
+                                QueueSchema.create({
+                                    messageId: "",
+                                    teamName: element.teamName,
+                                    playlist: playlist,
+                                    playerOne: discordID,
+                                    playerTwoId: "",
+                                    playerThreeId: "",
+                                })
+                                if (discordID === element.captainsId) {
+                                    let playerOptionOne = (await client.users.fetch(element.viceCaptainsId)).username
+                                    let playerOptionTwo = (await client.users.fetch(element.playerThreeId)).username
+                                    row = new MessageActionRow()
+                                        .addComponents(
+                                            new MessageSelectMenu()
+                                                .setCustomId('select_players_for_queue')
+                                                .setPlaceholder('Nothing selected')
+                                                .setMinValues(1)
+                                                .setMaxValues(1)
+                                                .addOptions([
+                                                    {
+                                                        label: playerOptionOne,
+                                                        description: 'Teammate #1',
+                                                        value: element.viceCaptainsId,
+                                                    },
+                                                    {
+                                                        label: playerOptionTwo,
+                                                        description: 'Teammate #2',
+                                                        value: element.playerThreeId,
+                                                    },
+                                                ])
+                                        );
+                                }
+                                else {
+                                    let playerOptionOne = (await client.users.fetch(element.captainsId)).username
+                                    let playerOptionTwo = (await client.users.fetch(element.playerThreeId)).username
+                                    row = new MessageActionRow()
+                                        .addComponents(
+                                            new MessageSelectMenu()
+                                                .setCustomId('select_players_for_queue')
+                                                .setPlaceholder('Nothing selected')
+                                                .setMinValues(1)
+                                                .setMaxValues(1)
+                                                .addOptions([
+                                                    {
+                                                        label: playerOptionOne,
+                                                        description: 'Teammate #1',
+                                                        value: element.captainsId,
+                                                    },
+                                                    {
+                                                        label: playerOptionTwo,
+                                                        description: 'Teammate #2',
+                                                        value: element.playerThreeId,
+                                                    },
+                                                ])
+                                        );
+                                }
+                            }
+                            else {
+                                QueueSchema.create({
+                                    messageId: "",
+                                    teamName: element.teamName,
+                                    playlist: playlist,
+                                    playerOne: discordID,
+                                    playerTwoId: "",
+                                    playerThreeId: "",
+                                })
+                                if (discordID === element.captainsId) {
+                                    let playerOptionOne = (await client.users.fetch(element.viceCaptainsId)).username
+                                    let playerOptionTwo = (await client.users.fetch(element.playerThreeId)).username
+                                    let playerOptionThree = (await client.users.fetch(element.playerFourId)).username
+
+                                    row = new MessageActionRow()
+                                        .addComponents(
+                                            new MessageSelectMenu()
+                                                .setCustomId('select_players_for_queue')
+                                                .setPlaceholder('Nothing selected')
+                                                .setMinValues(2)
+                                                .setMaxValues(2)
+                                                .addOptions([
+                                                    {
+                                                        label: playerOptionOne,
+                                                        description: 'Teammate #1',
+                                                        value: element.viceCaptainsId,
+                                                    },
+                                                    {
+                                                        label: playerOptionTwo,
+                                                        description: 'Teammate #2',
+                                                        value: element.playerThreeId,
+                                                    },
+                                                    {
+                                                        label: playerOptionThree,
+                                                        description: 'Teammate #3',
+                                                        value: element.playerFourId,
+                                                    },
+                                                ])
+                                        );
+                                }
+                                else {
+                                    let playerOptionOne = (await client.users.fetch(element.captainsId)).username
+                                    let playerOptionTwo = (await client.users.fetch(element.playerThreeId)).username
+                                    let playerOptionThree = (await client.users.fetch(element.playerFourId)).username
+
+                                    row = new MessageActionRow()
+                                        .addComponents(
+                                            new MessageSelectMenu()
+                                                .setCustomId('select_players_for_queue')
+                                                .setPlaceholder('Nothing selected')
+                                                .setMinValues(2)
+                                                .setMaxValues(2)
+                                                .addOptions([
+                                                    {
+                                                        label: playerOptionOne,
+                                                        description: 'Teammate #1',
+                                                        value: element.captainsId,
+                                                    },
+                                                    {
+                                                        label: playerOptionTwo,
+                                                        description: 'Teammate #2',
+                                                        value: element.playerThreeId,
+                                                    },
+                                                    {
+                                                        label: playerOptionThree,
+                                                        description: 'Teammate #3',
+                                                        value: element.playerFourId,
+                                                    },
+                                                ])
+                                        );
+                                }
+
+                            }
+
+                        })
+                    })
+            }
+            createDropdownForQueueing()
+            await new Promise(resolve => setTimeout(resolve, 1500))
+            if (playlist === "1s") {
+                await interaction.editReply({
+                    content: 'You have joined the queue.',
+                })
+                return
+            }
+            else if (row === null) {
+                console.log('ROW IS EMPTY')
+                return
+            }
+
+            else {
+                console.log(row)
+                await interaction.editReply({
+                    content: 'Select your teammate(s) who will be queing with you',
+                    components: [
+                        row
+                    ],
+                })
+            }
+        }
+        if (interaction.customId === "select_players_for_queue") {
+            console.log(interaction.user.id, interaction.values)
+            const discordID = interaction.user.id
+            const queueChannel: TextChannel = client.channels!.cache.get('914264483227131945') as TextChannel;
+            await interaction.deferReply({ ephemeral: true });
+            await QueueSchema.find({
+                discordID: { "$in": ["playerOne", "playerTwoId", "playerThreeId"] }
+            })
+                .then((id) => {
+                    id.forEach(async element => {
+                        if (element.playlist === '2s' || element.playlist === 'Hoops') {
+                            await TeamSchema.find({ playlist: element.playlist, discordID: { "$in": ["captainsId", "viceCaptainsId", "playerThreeId", "playerFourId"] } })
+                                .then((id) => {
+                                    id.forEach(async element => {
+                                        const accept_button = new MessageActionRow()
+                                            .addComponents(
+                                                new MessageButton()
+                                                    .setCustomId('accept_match')
+                                                    .setLabel('Accept Match')
+                                                    .setStyle('SUCCESS')
+                                            )
+
+                                        const accept_embed = new MessageEmbed()
+                                            .setDescription("Hello World")
+                                            .setTitle('Title')
+                                            .setColor('RED')
+                                            .setAuthor('Queue')
+                                            .setFooter('Footer')
+                                            .addFields([
+                                                {
+                                                    name: 'Playlist',
+                                                    value: `${element.playlist}`,
+                                                    inline: true,
+                                                },
+                                                {
+                                                    name: 'MMR',
+                                                    value: `${element.mmr}`,
+                                                    inline: true,
+                                                },
+                                            ])
+                                        let msg = await queueChannel.send({
+                                            embeds: [accept_embed],
+                                            components: [accept_button],
+                                        })
+                                        await QueueSchema.updateOne({ "playerOne": discordID }, { "messageId": msg.id, "playerTwoId": interaction.values[0]! })
+                                        await interaction.editReply({
+                                            content: 'You have joined the queue.',
+                                        })
+                                    })
+                                })
+                        }
+                        else {
+                            await TeamSchema.find({ playlist: element.playlist, discordID: { "$in": ["captainsId", "viceCaptainsId", "playerThreeId", "playerFourId"] } })
+                                .then((id) => {
+                                    id.forEach(async element => {
+                                        const accept_button = new MessageActionRow()
+                                            .addComponents(
+                                                new MessageButton()
+                                                    .setCustomId('accept_match')
+                                                    .setLabel('Accept Match')
+                                                    .setStyle('SUCCESS')
+                                            )
+
+                                        const accept_embed = new MessageEmbed()
+                                            .setDescription("Hello World")
+                                            .setTitle('Title')
+                                            .setColor('RED')
+                                            .setAuthor('Queue')
+                                            .setFooter('Footer')
+                                            .addFields([
+                                                {
+                                                    name: 'Playlist',
+                                                    value: `${element.playlist}`,
+                                                    inline: true,
+                                                },
+                                                {
+                                                    name: 'MMR',
+                                                    value: `${element.mmr}`,
+                                                    inline: true,
+                                                },
+                                            ])
+                                        let msg = await queueChannel.send({
+                                            embeds: [accept_embed],
+                                            components: [accept_button],
+                                        })
+                                        await QueueSchema.updateOne({ "playerOne": discordID }, { "messageId": msg.id, "playerTwoId": interaction.values[0]!, "playerThreeId": interaction.values[1]! })
+                                        await interaction.editReply({
+                                            content: 'You have joined the queue.',
+                                        })
+                                    })
+                                })
+                        }
+                    })
+                })
         }
     }
 });

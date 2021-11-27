@@ -1,7 +1,7 @@
 import { TextChannel } from "discord.js";
-import QueueSchema from "./../utils/QueueSchema"
+import QueueSchema from "../utils/QueueSchema"
 
-export async function addToQueue(playlist: string, playerOne: string, playerTwo: string, playerThree: string, messageChannel: TextChannel) {
+export async function addToQueue(playlist: string, playerOne: string, playerTwo: string, playerThree: string) {
 
     if (playlist === '1s') {
         console.log(playlist, playerOne)

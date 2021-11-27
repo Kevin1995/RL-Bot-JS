@@ -4,7 +4,6 @@ import mongoose from "mongoose"
 const QueueSchema = new mongoose.Schema({
     messageId: {
         type: String,
-        required: true
     },
     teamName: {
         type: String,

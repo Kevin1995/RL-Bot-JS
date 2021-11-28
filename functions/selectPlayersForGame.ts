@@ -16,8 +16,7 @@ export async function selectPlayersForGame(messageChannel: TextChannel, messageI
                 id.forEach(async element => {
                     if (element.playlist === '1s') {
                         console.log('Return')
-                        await QueueSchema.deleteOne({ messageId: element.messageId })
-                        // Create Match table
+                        // Fix this to create the match
                     }
                     else if (element.playlist === '2s' || element.playlist === 'Hoops') {
                         console.log('2S MATCH HAS BEEN FOUND')
@@ -99,7 +98,7 @@ export async function selectPlayersForGame(messageChannel: TextChannel, messageI
                                     }
                                 })
                             })
-                        await QueueSchema.deleteOne({ messageId: element.messageId })
+                        //await QueueSchema.deleteOne({ messageId: element.messageId })
                     }
                     else {
                         console.log('OPPONENTS ARE ')
@@ -191,7 +190,7 @@ export async function selectPlayersForGame(messageChannel: TextChannel, messageI
                                                 await MatchSchema.updateOne({ messageId: element.messageId }, { away_team: player.teamName })
                                             })
                                     }
-                                    await QueueSchema.deleteOne({ messageId: element.messageId })
+                                    //await QueueSchema.deleteOne({ messageId: element.messageId })
                                 })
                             })
                     }

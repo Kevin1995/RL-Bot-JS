@@ -46,7 +46,7 @@ client.on('ready', async () => {
             new MessageSelectMenu()
                 .setCustomId('queue_playlist')
                 .setPlaceholder('Nothing selected')
-                .setMinValues(1)
+                .setMinValues(0)
                 .setMaxValues(1)
                 .addOptions([
                     {
@@ -95,10 +95,10 @@ client.on('messageCreate', message => {
 
 client.on("messageDelete", async msg => {
     //console.log(msg.id)
-    await QueueSchema.find({ messageId: msg.id })
+    /* await QueueSchema.find({ messageId: msg.id })
         .then(async (msgID) => {
             await QueueSchema.deleteOne({ messageId: msg.id })
-        })
+        }) */
 })
 
 // Checking if our command is a slash command.
@@ -155,14 +155,16 @@ client.on('interactionCreate', async interaction => {
                 .then(async (results) => {
                     console.log(results[0])
                     if (results == null) {
+                        await messageChannel.messages.fetch(message)
+                            .then(message => message.delete())
                         await interaction.reply({
                             ephemeral: true,
                             content: 'Match has been accepted!'
                         })
-                        await messageChannel.messages.fetch(message)
-                            .then(message => message.delete())
                     }
                     else {
+                        await messageChannel.messages.fetch(message)
+                            .then(message => message.delete())
                         await interaction.reply({
                             ephemeral: true,
                             embeds: [
@@ -172,8 +174,6 @@ client.on('interactionCreate', async interaction => {
                                 results[0]!
                             ]
                         })
-                        await messageChannel.messages.fetch(message)
-                            .then(message => message.delete())
                     }
                 })
         }
@@ -181,19 +181,39 @@ client.on('interactionCreate', async interaction => {
     if (interaction.isSelectMenu()) {
         if (interaction.customId === 'select_players') {
             let msgID = ''
+            const discordID = interaction.user.id
             console.log('Selecting Players WOOP WOOP')
             console.log(interaction.user.id, interaction.values, interaction.message.embeds)
             interaction.message.embeds.some((embed) => {
                 msgID = embed.title!.replace(/[^0-9]/g, '');
             })
             console.log(msgID)
-            await MatchSchema.find({ messageId: msgID })
-                .then(async (element) => {
-                    console.log(element)
-                    await MatchSchema.updateOne({ messageId: msgID }, { away_player_one_id: interaction.user.id, away_player_two_id: interaction.values[0]!, away_player_three_id: interaction.values[1]! })
+            await QueueSchema.find({ messageId: msgID })
+                .then((id) => {
+                    id.forEach(async player => {
+                        console.log(`Home team players are ${player.playerOne}, ${player.playerTwoId}, ${player.playerThreeId}`)
+                        console.log(`Away team players are ${interaction.user.id}, ${interaction.values[0]!}, ${interaction.values[1]!}`)
+                        await TeamSchema.find({ playlist: player.playlist, discordID: { "$in": ["captainsId", "viceCaptainsId"] } })
+                            .then((id) => {
+                                id.forEach(async element => {
+                                    await MatchSchema.create({
+                                        messageId: msgID,
+                                        playlist: player.playlist,
+                                        home_team: player.teamName,
+                                        home_player_one_id: player.playerOne,
+                                        home_player_two_id: player.playerTwoId,
+                                        home_player_three_id: player.playerThreeId,
+                                        away_team: element.teamName,
+                                        away_player_one_id: interaction.user.id,
+                                        away_player_two_id: interaction.values[0]! ?? "",
+                                        away_player_three_id: interaction.values[1]! ?? "",
+                                        winning_team: "MATCH_IN_PROGRESS"
+                                    })
+                                    await QueueSchema.deleteOne({ messageId: msgID })
+                                })
+                            })
+                    })
                 })
-
-
             await interaction.deferReply({ ephemeral: true });
             await interaction.editReply({
                 content: 'Players for this match have been chosen.'
@@ -283,7 +303,7 @@ client.on('interactionCreate', async interaction => {
                                             new MessageSelectMenu()
                                                 .setCustomId('select_players_for_queue')
                                                 .setPlaceholder('Nothing selected')
-                                                .setMinValues(1)
+                                                .setMinValues(0)
                                                 .setMaxValues(1)
                                                 .addOptions([
                                                     {
@@ -307,7 +327,7 @@ client.on('interactionCreate', async interaction => {
                                             new MessageSelectMenu()
                                                 .setCustomId('select_players_for_queue')
                                                 .setPlaceholder('Nothing selected')
-                                                .setMinValues(1)
+                                                .setMinValues(0)
                                                 .setMaxValues(1)
                                                 .addOptions([
                                                     {
@@ -343,7 +363,7 @@ client.on('interactionCreate', async interaction => {
                                             new MessageSelectMenu()
                                                 .setCustomId('select_players_for_queue')
                                                 .setPlaceholder('Nothing selected')
-                                                .setMinValues(2)
+                                                .setMinValues(0)
                                                 .setMaxValues(2)
                                                 .addOptions([
                                                     {
@@ -374,7 +394,7 @@ client.on('interactionCreate', async interaction => {
                                             new MessageSelectMenu()
                                                 .setCustomId('select_players_for_queue')
                                                 .setPlaceholder('Nothing selected')
-                                                .setMinValues(2)
+                                                .setMinValues(0)
                                                 .setMaxValues(2)
                                                 .addOptions([
                                                     {

@@ -227,7 +227,61 @@ client.on('interactionCreate', async interaction => {
             const queueChannel: TextChannel = client.channels!.cache.get('914264483227131945') as TextChannel;
             let row = null
             let embed = null
+            let teamDosntExist = false
+            let teamAlreadyInQueue = false
             await interaction.deferReply({ ephemeral: true });
+            // Check if team exists
+            // Check if team already in queue
+            checkIfTeamExists()
+            checkIfTeamInQueue()
+            function checkIfTeamExists() {
+                TeamSchema.find({
+                    "$and": [
+                        {
+                            "playlist": playlist,
+                            discordID: { "$in": ["captainsId", "viceCaptainsId"] }
+                        }
+                    ]
+                })
+                    .then((id) => {
+                        if (id.length !== 1) {
+                            console.log('Team not found')
+                            teamDosntExist = true
+                        }
+                    })
+            }
+            function checkIfTeamInQueue() {
+                QueueSchema.find({
+                    "$and": [
+                        {
+                            "playlist": playlist,
+                            discordID: { "$in": ["playerOne", "playerTwoId", "playerThreeId"] }
+                        }
+                    ]
+                })
+                    .then((id) => {
+                        if (id.length !== 0) {
+                            teamAlreadyInQueue = true
+                        }
+
+                    })
+            }
+
+            console.log(teamDosntExist)
+            if (teamDosntExist = true) {
+                await interaction.editReply({
+                    content: `You do not have a ${playlist} team.`,
+                })
+                return
+            }
+
+            if (teamAlreadyInQueue) {
+                await interaction.editReply({
+                    content: `Your ${playlist} team is already in the queue.`,
+                })
+                return
+            }
+
             async function createDropdownForQueueing() {
                 await TeamSchema.find({
                     "$and": [

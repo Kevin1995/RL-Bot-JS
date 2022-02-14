@@ -1,4 +1,4 @@
-import { ButtonInteraction, Client, MessageActionRow, MessageEmbed, MessageSelectMenu, TextChannel } from "discord.js"
+import { Client, MessageActionRow, MessageEmbed, MessageSelectMenu, TextChannel } from "discord.js"
 import MatchSchema from "../utils/MatchSchema"
 import QueueSchema from "../utils/QueueSchema"
 import TeamSchema from "../utils/TeamSchema"
@@ -9,7 +9,6 @@ export async function selectPlayersForGame(messageChannel: TextChannel, messageI
     console.log(opponentID)
     let row = null;
     let embed = null;
-    let teamName = null;
     async function createDropdownForOpponentTeam() {
         await QueueSchema.find({ messageId: queueMessage.id })
             .then((id) => {
@@ -17,6 +16,25 @@ export async function selectPlayersForGame(messageChannel: TextChannel, messageI
                     if (element.playlist === '1s') {
                         console.log('Return')
                         // Fix this to create the match
+                        await TeamSchema.find({ playlist: element.playlist, captainsId: opponentID })
+                            .then((id) => {
+                                id.forEach(async player => {
+                                    await MatchSchema.create({
+                                        messageId: queueMessage.id,
+                                        playlist: element.playlist,
+                                        home_team: element.teamName,
+                                        home_player_one_id: element.playerOne,
+                                        home_player_two_id: "",
+                                        home_player_three_id: "",
+                                        away_team: player.teamName,
+                                        away_player_one_id: opponentID,
+                                        away_player_two_id: "",
+                                        away_player_three_id: "",
+                                        winning_team: "MATCH_IN_PROGRESS"
+                                    })
+                                    await QueueSchema.deleteOne({ messageId: queueMessage.id })
+                                })
+                            })
                     }
                     else if (element.playlist === '2s' || element.playlist === 'Hoops') {
                         console.log('2S MATCH HAS BEEN FOUND')
@@ -190,7 +208,6 @@ export async function selectPlayersForGame(messageChannel: TextChannel, messageI
                                                 await MatchSchema.updateOne({ messageId: element.messageId }, { away_team: player.teamName })
                                             })
                                     }
-                                    //await QueueSchema.deleteOne({ messageId: element.messageId })
                                 })
                             })
                     }
@@ -198,7 +215,7 @@ export async function selectPlayersForGame(messageChannel: TextChannel, messageI
             })
     }
     createDropdownForOpponentTeam()
-    await new Promise(resolve => setTimeout(resolve, 1750))
+    await new Promise(resolve => setTimeout(resolve, 2000))
     console.log(row)
-    return [row, embed, teamName]
+    return [row, embed]
 }
